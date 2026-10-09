@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A free, phone-friendly travel day checklist for Airstream owners. Check off hitching, hookups, inside and outside items, and keep your own custom list.">
+<meta name="theme-color" content="#eceff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111519" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Travel Day">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Travel Day Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow column like a clipboard; retro-teal riveted header band with a lawn flamingo, sticky progress strip, big tappable rows color-coded Outside (teal) / Inside (flamingo) / Both (sunshine) */
+:root {
+  --bg: #edf4f5;          /* sky-tinted aluminum */
+  --surface: #ffffff;
+  --ink: #182630;
+  --muted: #526270;
+  --line: #cfdcdf;
+  --accent: #0b6577;      /* retro teal */
+  --band: #0b6577;
+  --band-ink: #ffffff;
+  --band-muted: #d3ecf0;
+  --flamingo: #d9407f;
+  --flamingo-ink: #ffffff;
+  --flamingo-soft: #fde6ef;
+  --sun: #f2b01e;
+  --out-soft: #dcf0f3; --out-ink: #0b6577;
+  --in-soft: #fde6ef;  --in-ink: #a8285f;
+  --both-soft: #fdf0cc; --both-ink: #7d5200;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcebee;
+  --done: #23754a;
+  --done-soft: #e2f1e8;
+  --caution: #8a4b00;
+  --caution-soft: #fbecd6;
+  --rivet: #b6bec7;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  --fs: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111519; --surface: #1a2027; --ink: #e9eef2; --muted: #a0abb6; --line: #2d3740;
+    --accent: #63b8cb; --accent-ink: #08191e; --accent-soft: #16323a;
+    --done: #74c995; --done-soft: #17331f; --caution: #f0b46a; --caution-soft: #3a2a14; --rivet: #3a444e;
+    --band: #10343c; --band-ink: #e9eef2; --band-muted: #a9d2db;
+    --flamingo: #f27fb3; --flamingo-ink: #2a0f1b; --flamingo-soft: #34192a; --sun: #f2b01e;
+    --out-soft: #14313a; --out-ink: #84cfe0; --in-soft: #34192a; --in-ink: #f6a0c6; --both-soft: #33290f; --both-ink: #f2c76b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111519; --surface: #1a2027; --ink: #e9eef2; --muted: #a0abb6; --line: #2d3740;
+  --accent: #63b8cb; --accent-ink: #08191e; --accent-soft: #16323a;
+  --done: #74c995; --done-soft: #17331f; --caution: #f0b46a; --caution-soft: #3a2a14; --rivet: #3a444e;
+  --band: #10343c; --band-ink: #e9eef2; --band-muted: #a9d2db;
+  --flamingo: #f27fb3; --flamingo-ink: #2a0f1b; --flamingo-soft: #34192a; --sun: #f2b01e;
+  --out-soft: #14313a; --out-ink: #84cfe0; --in-soft: #34192a; --in-ink: #f6a0c6; --both-soft: #33290f; --both-ink: #f2c76b;
+  color-scheme: dark;
+}
+:root[data-size="1"] { --fs: 20px; }
+:root[data-size="2"] { --fs: 23px; }
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: var(--fs); line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+.masthead {
+  background: var(--band); color: var(--band-ink);
+  margin-inline: -16px; padding: 22px 16px 34px; border-radius: 0 0 20px 20px;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: end; position: relative;
+}
+.masthead::after {
+  content: ""; position: absolute; left: 16px; right: 16px; bottom: 12px; height: 8px;
+  background: radial-gradient(circle, var(--band-muted) 2px, transparent 2.6px) 0 50% / 22px 8px repeat-x;
+  opacity: .55;
+}
+.mast-text { display: grid; gap: 8px; min-width: 0; }
+.eyebrow { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .78em; color: var(--band-muted); }
+h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
+.lede { margin: 0; color: var(--band-muted); max-width: 36em; }
+.flamingo { width: 76px; height: auto; margin-bottom: -6px; }
+
+/* Sticky progress */
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line);
+  display: grid; gap: 6px;
+}
+.progress-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.progress-count { font-family: var(--font-display); font-weight: 700; font-size: 1.15em; font-variant-numeric: tabular-nums; }
+.progress-role { color: var(--muted); font-size: .85em; }
+.bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; background: var(--done); border-radius: 5px; transition: width .25s ease; }
+
+/* Controls */
+.panel { display: grid; gap: 10px; padding-block: 18px 6px; }
+.label { font-weight: 700; font-size: .9em; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--line); padding: 4px; border-radius: 12px; }
+.seg button {
+  min-height: 52px; border: 0; border-radius: 9px; background: transparent; cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05em; color: var(--ink);
+}
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+.btn {
+  min-height: 48px; padding: 0 16px; border-radius: 10px; border: 2px solid var(--accent);
+  background: transparent; color: var(--accent); font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+}
+.btn.solid { background: var(--accent); color: var(--accent-ink); }
+.btn.quiet { border-color: var(--line); color: var(--ink); }
+.btn.danger { border-color: var(--caution); color: var(--caution); }
+
+/* Edit banner */
+.editnote { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; margin-top: 14px; }
+.editnote p { margin: 0; }
+
+/* Sections */
+.sections { display: grid; gap: 14px; padding-top: 18px; }
+.section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.sec-head {
+  width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px;
+  padding: 14px 16px; background: none; border: 0; text-align: left; cursor: pointer;
+}
+.sec-title { font-family: var(--font-display); font-weight: 700; font-size: 1.3em; line-height: 1.1; }
+.sec-meta { grid-column: 1; display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: .85em; }
+.sec-count { grid-row: 1 / span 2; grid-column: 2; font-variant-numeric: tabular-nums; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.chev { width: 14px; height: 14px; border-right: 3px solid var(--muted); border-bottom: 3px solid var(--muted); transform: rotate(45deg); transition: transform .2s; margin-top: -6px; }
+.section.closed .chev { transform: rotate(-45deg); margin-top: 0; }
+.section.closed .items, .section.closed .add-row { display: none; }
+.section.complete .sec-count { color: var(--done); }
+.section.complete { border-color: var(--done); }
+.section[data-who="outside"] .sec-head { background: var(--out-soft); }
+.section[data-who="inside"] .sec-head { background: var(--in-soft); }
+.section[data-who="both"] .sec-head { background: var(--both-soft); }
+.section[data-who="outside"] .who { color: var(--out-ink); }
+.section[data-who="inside"] .who { color: var(--in-ink); }
+.section[data-who="both"] .who { color: var(--both-ink); }
+.who { font-family: var(--font-display); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .8em; }
+
+.items { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.item { border-bottom: 1px solid var(--line); }
+.item:last-child { border-bottom: 0; }
+.row { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 14px 16px; cursor: pointer; min-height: 64px; }
+.row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.box {
+  width: 34px; height: 34px; border-radius: 8px; border: 2.5px solid var(--muted); background: var(--surface);
+  display: grid; place-items: center; margin-top: -3px; transition: background .15s, border-color .15s;
+}
+.box::after { content: ""; width: 10px; height: 18px; border-right: 4px solid var(--accent-ink); border-bottom: 4px solid var(--accent-ink); transform: rotate(45deg) translate(-1px, -2px); opacity: 0; }
+.row input:checked + .box { background: var(--done); border-color: var(--done); }
+.row input:checked + .box::after { opacity: 1; border-color: var(--surface); }
+.row input:focus-visible + .box { outline: 3px solid var(--accent); outline-offset: 2px; }
+.text { min-width: 0; display: grid; gap: 4px; }
+.item.checked { background: var(--done-soft); }
+.item.checked .main { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 2px; }
+.tip { color: var(--muted); font-size: .85em; }
+.tag { display: inline-block; font-size: .72em; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); vertical-align: 2px; margin-left: 4px; white-space: nowrap; }
+.tag.mine { background: var(--caution-soft); color: var(--caution); }
+
+/* Edit-mode rows */
+.edit-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; min-height: 64px; }
+.item.is-hidden .main { color: var(--muted); text-decoration: line-through; }
+.add-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+.add-row input {
+  min-height: 52px; min-width: 0; border-radius: 10px; border: 2px solid var(--line); padding: 0 12px;
+  font: inherit; background: var(--bg); color: var(--ink);
+}
+
+/* Done banner */
+.alldone { margin-top: 18px; background: var(--done); color: var(--surface); border-radius: 14px; padding: 18px; display: grid; gap: 4px; }
+.alldone h2 { font-size: 1.5em; }
+.alldone p { margin: 0; }
+
+/* Reset */
+.reset { margin-top: 22px; display: grid; gap: 10px; }
+.confirm { background: var(--caution-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; }
+.confirm p { margin: 0; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Info blocks */
+.info { margin-top: 28px; display: grid; gap: 14px; }
+details.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+details.card summary { min-height: 60px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.15em; cursor: pointer; }
+details.card ol { margin: 0 0 16px; padding-left: 1.3em; display: grid; gap: 8px; }
+details.card h3 { font-size: 1em; margin: 6px 0 8px; }
+.tipjar { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; display: grid; gap: 12px; }
+.tipjar h2 { font-size: 1.35em; }
+.tipjar p { margin: 0; color: var(--muted); }
+.tipjar .btn-row .btn { flex: 1 1 180px; min-height: 56px; }
+.tipjar.pink { background: var(--flamingo-soft); border-color: transparent; }
+.tipjar.pink .btn { border-color: var(--flamingo); color: var(--in-ink); }
+.tipjar.pink .btn.solid { background: var(--flamingo); color: var(--flamingo-ink); }
+.fb-addr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .9em; color: var(--muted); }
+.fb-addr strong { color: var(--ink); overflow-wrap: anywhere; user-select: all; }
+.soon { font-size: .85em; color: var(--caution); }
+.fine { color: var(--muted); font-size: .8em; margin-top: 24px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="mast-text">
+      <div class="eyebrow">For Airstream owners</div>
+      <h1>Travel Day Checklist</h1>
+      <p class="lede">Tap each item as you finish it. Your list is saved on this phone, even with no signal.</p>
+    </div>
+    <svg class="flamingo" viewBox="0 0 100 150" aria-hidden="true" focusable="false">
+      <path d="M58 58 C70 42 56 32 60 19 C63 9 77 7 81 16" fill="none" stroke="var(--flamingo)" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="80" cy="17" r="7" fill="var(--flamingo)"/>
+      <path d="M85 13 Q97 15 95 28 L89 22 Z" fill="var(--band-ink)"/>
+      <path d="M93 22 Q96 25 95 28 L91 25 Z" fill="#1d1d1d"/>
+      <circle cx="81" cy="15" r="1.6" fill="#1d1d1d"/>
+      <path d="M22 64 C24 50 46 46 60 54 C68 59 66 74 54 78 C42 82 26 80 14 72 C18 70 20 68 22 64 Z" fill="var(--flamingo)"/>
+      <path d="M30 62 C38 56 52 57 56 64 C48 70 38 70 30 62 Z" fill="var(--flamingo-soft)" opacity=".55"/>
+      <path d="M44 79 L44 140" stroke="var(--flamingo)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M44 100 L57 92 L46 87" fill="none" stroke="var(--flamingo)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M38 141 L51 141" stroke="var(--flamingo)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </header>
+
+  <div class="progress" aria-live="polite">
+    <div class="progress-row">
+      <span class="progress-count" id="count">0 of 0 done</span>
+      <span class="progress-role" id="roleLabel"></span>
+    </div>
+    <div class="bar"><span id="bar"></span></div>
+  </div>
+
+  <section class="panel" aria-label="Settings">
+    <div class="label" id="roleTitle">Which jobs are yours?</div>
+    <div class="seg" role="group" aria-labelledby="roleTitle" id="roleSeg">
+      <button type="button" data-role="outside" id="role-outside">Outside</button>
+      <button type="button" data-role="inside" id="role-inside">Inside</button>
+      <button type="button" data-role="all" id="role-all">Everything</button>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn quiet" id="sizeBtn">Text size: Normal</button>
+      <button type="button" class="btn quiet" id="themeBtn">Dark mode</button>
+      <button type="button" class="btn quiet" id="editBtn">Customize my list</button>
+    </div>
+    <div class="editnote" id="editNote" hidden>
+      <p><strong>Customizing.</strong> Tap Hide on anything your trailer doesn't have. Add your own items at the bottom of each section.</p>
+      <div class="btn-row">
+        <button type="button" class="btn solid" id="editDone">Done customizing</button>
+        <button type="button" class="btn quiet" id="showAll">Show all hidden items</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="sections" id="sections"></div>
+
+  <div class="alldone" id="allDone" hidden>
+    <h2>All done. Safe travels!</h2>
+    <p>Every item on your list is checked.</p>
+  </div>
+
+  <div class="reset">
+    <button type="button" class="btn solid" id="resetBtn">Start a new travel day</button>
+    <div class="confirm" id="resetConfirm" hidden>
+      <p>This unchecks every item so you can start fresh. Your custom items stay.</p>
+      <div class="btn-row">
+        <button type="button" class="btn danger" id="resetYes">Yes, uncheck everything</button>
+        <button type="button" class="btn quiet" id="resetNo">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info">
+    <details class="card" id="homeHelp">
+      <summary>Put this on your home screen</summary>
+      <h3>iPhone or iPad</h3>
+      <ol>
+        <li>Open this page in <strong>Safari</strong>.</li>
+        <li>Tap the <strong>Share</strong> button (the square with an arrow pointing up).</li>
+        <li>Scroll down and tap <strong>Add to Home Screen</strong>, then tap <strong>Add</strong>.</li>
+      </ol>
+      <h3>Android</h3>
+      <ol>
+        <li>Open this page in <strong>Chrome</strong>.</li>
+        <li>Tap the <strong>three dots</strong> in the top corner.</li>
+        <li>Tap <strong>Add to Home screen</strong>, then tap <strong>Add</strong>.</li>
+      </ol>
+    </details>
+
+    <section class="tipjar pink" aria-labelledby="tipTitle">
+      <h2 id="tipTitle">Did this help?</h2>
+      <p>This checklist is free. If it saved you a headache on the road, you can buy me a coffee.</p>
+      <div class="btn-row">
+        <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Buy me a coffee</a>
+        <a class="btn" id="venmoLink" href="#" target="_blank" rel="noopener">Tip with Venmo</a>
+      </div>
+      <div class="soon" id="tipSoon" hidden>Tip links are coming soon. Thank you!</div>
+    </section>
+
+    <section class="tipjar" aria-labelledby="fbTitle">
+      <h2 id="fbTitle">Have an idea?</h2>
+      <p>Spot something missing or have a suggestion? I'd love to hear it.</p>
+      <div class="btn-row">
+        <a class="btn" id="fbLink" href="#">Send feedback</a>
+      </div>
+      <div class="fb-addr" id="fbAddrRow" hidden>
+        <span>If your email app doesn't open, write to</span>
+        <strong id="fbAddr"></strong>
+        <button type="button" class="btn quiet" id="fbCopy">Copy address</button>
+      </div>
+    </section>
+
+    <p class="fine">This list is a reminder, not a replacement for your trailer, hitch and tow vehicle manuals. Always follow the manufacturer's instructions.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Tip links: fill these in before publishing.
+  var BMC_URL = "";       // e.g. "https://buymeacoffee.com/yourname"
+  var VENMO_USER = "";    // e.g. "your-venmo-username" (no @)
+  var FEEDBACK_EMAIL = "rigkit31@gmail.com";
+
+  var SECTIONS = [
+    { id: "hookups", name: "Hookups & Utilities", who: "outside", items: [
+      ["h1", "Black tank dumped, then gray tank", 0, "Black first, so the gray water rinses the hose."],
+      ["h2", "Sewer hose rinsed, capped and stowed"],
+      ["h3", "Water hoses and filter disconnected, drained and stowed"],
+      ["h4", "Hose splitter and pressure regulator taken off the spigot", 0, "Small and easy to leave behind."],
+      ["h5", "City water fill cap closed"],
+      ["h6", "Power cord unplugged and stowed"],
+      ["h7", "Surge protector or EMS removed from the post"],
+      ["h8", "Cable or satellite cord disconnected", 1],
+      ["h9", "Starlink dish taken down and stowed", 1],
+      ["h10", "Propane tanks turned off", 0, "If you tow with propane on, hide this item."],
+      ["h11", "Propane cover latched"],
+      ["h12", "Water heater door latched"],
+      ["h13", "Exterior compartments and hatches closed and locked"]
+    ]},
+    { id: "exterior", name: "Exterior Stow", who: "outside", items: [
+      ["e1", "Main awning retracted and locked"],
+      ["e2", "Window awnings secured", 1],
+      ["e3", "Outdoor gear packed: chairs, grill, rug, table"],
+      ["e4", "Exterior shower stowed and door closed", 1],
+      ["e5", "Roof clear: antenna down, solar panels flat", 1],
+      ["e6", "Leveling blocks and pads picked up"],
+      ["e7", "Entry steps retracted"]
+    ]},
+    { id: "tires", name: "Tires, Wheels & Chassis", who: "outside", items: [
+      ["t1", "Tire pressure checked cold on trailer and tow vehicle"],
+      ["t2", "Tires look good: no bulges, cuts or low tread"],
+      ["t3", "Lug nuts torqued to spec in a star pattern", 0, "On 6-lug wheels: 1, 4, 2, 5, 3, 6."],
+      ["t4", "Tire pressure monitor on and reading every tire", 1],
+      ["t5", "Stabilizer jacks fully raised"],
+      ["t6", "Wheel chocks removed and stowed"],
+      ["t7", "Look underneath for leaks, hanging items or obstructions"]
+    ]},
+    { id: "hitch", name: "Hitch & Tow Setup", who: "outside", items: [
+      ["k1", "Hitch pin and clip in place in the receiver"],
+      ["k2", "Coupler latched on the ball and locked"],
+      ["k3", "Lift test: raise the tongue jack slightly to confirm the coupler holds"],
+      ["k4", "Weight distribution and/or sway control connected and tensioned", 1],
+      ["k5", "Safety chains crossed and connected"],
+      ["k6", "Breakaway cable clipped to the tow vehicle, not the chains"],
+      ["k7", "7-pin plug connected"],
+      ["k8", "Tongue jack fully raised, foot or pad removed and stored"],
+      ["k9", "Lights checked with a helper: running, turn signals, brakes, clearance"],
+      ["k10", "Brake controller tested: squeeze the manual lever while rolling slowly"],
+      ["k11", "License plate, reflectors and lights clean and visible"]
+    ]},
+    { id: "vehicle", name: "Tow Vehicle", who: "outside", items: [
+      ["v1", "Towing mirrors extended and adjusted"],
+      ["v2", "Tow/haul mode on"],
+      ["v3", "Backup or trailer camera on", 1],
+      ["v4", "Route checked for low clearances and propane restrictions", 0, "Some tunnels don't allow propane."],
+      ["v5", "Fuel or charge level checked"],
+      ["v6", "Passengers and pets buckled in"]
+    ]},
+    { id: "kitchen", name: "Kitchen", who: "inside", items: [
+      ["c1", "Counter cleared and appliances unplugged and stowed"],
+      ["c2", "Stove burners off and cover down"],
+      ["c3", "Sink empty and dishes secured"],
+      ["c4", "Microwave glass tray removed or padded", 1, "Trays often break in transit."],
+      ["c5", "Fridge set for travel, following your fridge's manual", 0, "Many fridges have a night or eco mode. It's fine when the fridge is already cold or it's cool out. Use normal mode in hot weather or with perishable food."],
+      ["c6", "Fridge and freezer doors latched"],
+      ["c7", "Pantry, cabinets and drawers latched"]
+    ]},
+    { id: "bath", name: "Bathroom & Shower", who: "inside", items: [
+      ["b1", "Counter and shelf items put away"],
+      ["b2", "Shower baskets and items stowed or set on the floor"],
+      ["b3", "Shower head set on the shower floor"],
+      ["b4", "Shower door closed and locked"],
+      ["b5", "Toilet lid down"],
+      ["b6", "Cabinets and drawers closed"]
+    ]},
+    { id: "living", name: "Bedroom & Living Area", who: "inside", items: [
+      ["l1", "Nightstands and tables cleared"],
+      ["l2", "TV locked to its mount or stowed", 1],
+      ["l3", "Overhead lockers, cabinets and drawers latched"],
+      ["l4", "Under-bed storage latched"],
+      ["l5", "Loose decor and wall items stowed"],
+      ["l6", "Loose chairs or stools inside secured"]
+    ]},
+    { id: "systems", name: "Systems & Power", who: "inside", items: [
+      ["s1", "Bedroom windows closed and latched"],
+      ["s2", "Living area and bathroom windows closed and latched"],
+      ["s3", "Blinds and shades set for travel, including skylight shades"],
+      ["s4", "Roof vents, fans and skylights closed"],
+      ["s5", "Air conditioner and furnace off"],
+      ["s6", "Water pump off"],
+      ["s7", "Water heater off"],
+      ["s8", "Inverter off", 1],
+      ["s9", "Lights, radio and USB switches off"],
+      ["s10", "Battery switch left ON", 0, "Keeps 12V systems like the fridge running."]
+    ]},
+    { id: "final", name: "Final Check", who: "both", items: [
+      ["f1", "Quick walk-through inside: anything loose or open?"],
+      ["f2", "Walk the whole outside of the trailer"],
+      ["f3", "Site check: nothing left behind (chocks, blocks, hoses, trash)"],
+      ["f4", "Keys, wallet and phones taken from the key rack"],
+      ["f5", "Main entry door latched, deadbolted and locked"]
+    ]}
+  ];
+  var WHO_LABEL = { outside: "Outside", inside: "Inside", both: "Both" };
+  var ROLE_LABEL = { outside: "Outside jobs", inside: "Inside jobs", all: "Whole list" };
+  var SIZES = ["Normal", "Large", "Extra large"];
+  var KEY = "traveldaychecklist.v1";
+
+  var state = load();
+  var editing = false;
+
+  function load() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+    s = s || {};
+    return {
+      role: s.role || "all",
+      size: s.size || 0,
+      theme: s.theme === "dark" ? "dark" : "light",
+      checked: s.checked || {},
+      hidden: s.hidden || {},
+      custom: s.custom || [],
+      closed: s.closed || {}
+    };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function itemsFor(sec) {
+    var list = sec.items.map(function (it) {
+      return { id: it[0], text: it[1], equipped: !!it[2], tip: it[3] || "" };
+    });
+    state.custom.forEach(function (c) {
+      if (c.section === sec.id) list.push({ id: c.id, text: c.text, mine: true, tip: "" });
+    });
+    return list;
+  }
+  function sectionVisible(sec) {
+    return state.role === "all" || sec.who === "both" || sec.who === state.role;
+  }
+
+  var root = document.documentElement;
+  var sectionsEl = document.getElementById("sections");
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function render() {
+    sectionsEl.textContent = "";
+    SECTIONS.forEach(function (sec) {
+      if (!sectionVisible(sec)) return;
+      var items = itemsFor(sec);
+      var shown = editing ? items : items.filter(function (it) { return !state.hidden[it.id]; });
+      if (!shown.length && !editing) return;
+
+      var box = el("section", "section");
+      box.dataset.sec = sec.id;
+      box.dataset.who = sec.who;
+      if (state.closed[sec.id] && !editing) box.classList.add("closed");
+
+      var head = el("button", "sec-head");
+      head.type = "button";
+      head.id = "head-" + sec.id;
+      head.setAttribute("aria-expanded", box.classList.contains("closed") ? "false" : "true");
+      head.appendChild(el("span", "sec-title", sec.name));
+      var count = el("span", "sec-count");
+      count.appendChild(el("span", "sec-num"));
+      count.appendChild(el("span", "chev"));
+      head.appendChild(count);
+      var meta = el("span", "sec-meta");
+      meta.appendChild(el("span", "who", WHO_LABEL[sec.who]));
+      head.appendChild(meta);
+      box.appendChild(head);
+
+      var ul = el("ul", "items");
+      shown.forEach(function (it) {
+        var li = el("li", "item");
+        li.dataset.id = it.id;
+        var hidden = !!state.hidden[it.id];
+        if (editing) {
+          if (hidden) li.classList.add("is-hidden");
+          var r = el("div", "edit-row");
+          var t = el("div", "text");
+          var main = el("span", "main", it.text);
+          t.appendChild(main);
+          if (it.mine) main.appendChild(el("span", "tag mine", "My item"));
+          else if (it.equipped) main.appendChild(el("span", "tag", "If equipped"));
+          r.appendChild(t);
+          var b = el("button", "btn " + (it.mine ? "danger" : "quiet"));
+          b.type = "button";
+          b.dataset.act = it.mine ? "delete" : (hidden ? "show" : "hide");
+          b.textContent = it.mine ? "Delete" : (hidden ? "Show" : "Hide");
+          b.setAttribute("aria-label", b.textContent + ": " + it.text);
+          r.appendChild(b);
+          li.appendChild(r);
+        } else {
+          if (state.checked[it.id]) li.classList.add("checked");
+          var label = el("label", "row");
+          var cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.id = "cb-" + it.id;
+          cb.checked = !!state.checked[it.id];
+          label.appendChild(cb);
+          label.appendChild(el("span", "box"));
+          var tx = el("span", "text");
+          var mn = el("span", "main", it.text);
+          if (it.mine) mn.appendChild(el("span", "tag mine", "My item"));
+          else if (it.equipped) mn.appendChild(el("span", "tag", "If equipped"));
+          tx.appendChild(mn);
+          if (it.tip) tx.appendChild(el("span", "tip", it.tip));
+          label.appendChild(tx);
+          li.appendChild(label);
+        }
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+
+      if (editing) {
+        var add = el("form", "add-row");
+        var inp = document.createElement("input");
+        inp.type = "text";
+        inp.id = "add-" + sec.id;
+        inp.placeholder = "Add your own item";
+        inp.setAttribute("aria-label", "Add your own item to " + sec.name);
+        inp.maxLength = 120;
+        var ab = el("button", "btn solid", "Add");
+        ab.type = "submit";
+        add.appendChild(inp);
+        add.appendChild(ab);
+        add.dataset.sec = sec.id;
+        box.appendChild(add);
+      }
+      sectionsEl.appendChild(box);
+    });
+    updateCounts();
+    renderControls();
+  }
+
+  function updateCounts() {
+    var total = 0, done = 0;
+    SECTIONS.forEach(function (sec) {
+      if (!sectionVisible(sec)) return;
+      var items = itemsFor(sec).filter(function (it) { return !state.hidden[it.id]; });
+      var d = items.filter(function (it) { return state.checked[it.id]; }).length;
+      total += items.length; done += d;
+      var box = sectionsEl.querySelector('[data-sec="' + sec.id + '"]');
+      if (box) {
+        box.querySelector(".sec-num").textContent = d + " / " + items.length;
+        box.classList.toggle("complete", items.length > 0 && d === items.length && !editing);
+      }
+    });
+    document.getElementById("count").textContent = done + " of " + total + " done";
+    document.getElementById("roleLabel").textContent = ROLE_LABEL[state.role];
+    document.getElementById("bar").style.width = (total ? (done / total) * 100 : 0) + "%";
+    document.getElementById("allDone").hidden = editing || !(total > 0 && done === total);
+  }
+
+  function renderControls() {
+    Array.prototype.forEach.call(document.querySelectorAll("#roleSeg button"), function (b) {
+      b.setAttribute("aria-pressed", b.dataset.role === state.role ? "true" : "false");
+    });
+    root.setAttribute("data-size", String(state.size));
+    root.setAttribute("data-theme", state.theme);
+    var tb = document.getElementById("themeBtn");
+    tb.textContent = state.theme === "dark" ? "Light mode" : "Dark mode";
+    tb.setAttribute("aria-label", state.theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    document.getElementById("sizeBtn").textContent = "Text size: " + SIZES[state.size];
+    document.getElementById("editBtn").hidden = editing;
+    document.getElementById("editNote").hidden = !editing;
+  }
+
+  // Keep the screen awake while people work through the list (when the phone allows it).
+  var wakeLock = null;
+  function keepAwake() {
+    if (wakeLock || !navigator.wakeLock) return;
+    navigator.wakeLock.request("screen").then(function (l) {
+      wakeLock = l;
+      l.addEventListener("release", function () { wakeLock = null; });
+    }).catch(function () {});
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && Object.keys(state.checked).length) keepAwake();
+  });
+
+  sectionsEl.addEventListener("change", function (e) {
+    var cb = e.target;
+    if (cb.type !== "checkbox") return;
+    var li = cb.closest(".item");
+    var id = li.dataset.id;
+    if (cb.checked) state.checked[id] = true; else delete state.checked[id];
+    li.classList.toggle("checked", cb.checked);
+    save();
+    updateCounts();
+    keepAwake();
+  });
+
+  sectionsEl.addEventListener("click", function (e) {
+    var head = e.target.closest(".sec-head");
+    if (head && !editing) {
+      var box = head.parentNode;
+      var id = box.dataset.sec;
+      var closed = box.classList.toggle("closed");
+      head.setAttribute("aria-expanded", closed ? "false" : "true");
+      if (closed) state.closed[id] = true; else delete state.closed[id];
+      save();
+      return;
+    }
+    var btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    var itemId = btn.closest(".item").dataset.id;
+    if (btn.dataset.act === "hide") { state.hidden[itemId] = true; delete state.checked[itemId]; }
+    else if (btn.dataset.act === "show") delete state.hidden[itemId];
+    else if (btn.dataset.act === "delete") {
+      state.custom = state.custom.filter(function (c) { return c.id !== itemId; });
+      delete state.checked[itemId];
+    }
+    save();
+    render();
+    var again = document.querySelector('.item[data-id="' + itemId + '"] button');
+    if (again) again.focus();
+  });
+
+  sectionsEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var inp = form.querySelector("input");
+    var text = inp.value.trim();
+    if (!text) { inp.focus(); return; }
+    var secId = form.dataset.sec;
+    state.custom.push({ id: "u" + Date.now().toString(36), section: secId, text: text });
+    save();
+    render();
+    var f = document.getElementById("add-" + secId);
+    if (f) f.focus();
+  });
+
+  document.getElementById("roleSeg").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-role]");
+    if (!b) return;
+    state.role = b.dataset.role;
+    save();
+    render();
+  });
+  document.getElementById("sizeBtn").addEventListener("click", function () {
+    state.size = (state.size + 1) % SIZES.length;
+    save();
+    renderControls();
+  });
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    save();
+    renderControls();
+  });
+  document.getElementById("editBtn").addEventListener("click", function () {
+    editing = true; render();
+    document.getElementById("editDone").focus();
+  });
+  document.getElementById("editDone").addEventListener("click", function () {
+    editing = false; render();
+    document.getElementById("editBtn").focus();
+  });
+  document.getElementById("showAll").addEventListener("click", function () {
+    state.hidden = {}; save(); render();
+  });
+
+  var resetConfirm = document.getElementById("resetConfirm");
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    resetConfirm.hidden = false;
+    document.getElementById("resetNo").focus();
+  });
+  document.getElementById("resetNo").addEventListener("click", function () { resetConfirm.hidden = true; });
+  document.getElementById("resetYes").addEventListener("click", function () {
+    state.checked = {}; state.closed = {};
+    save();
+    resetConfirm.hidden = true;
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // Tip links
+  var bmc = document.getElementById("bmcLink");
+  var venmo = document.getElementById("venmoLink");
+  var soon = document.getElementById("tipSoon");
+  if (BMC_URL) bmc.href = BMC_URL;
+  if (VENMO_USER) venmo.href = "https://venmo.com/u/" + encodeURIComponent(VENMO_USER);
+  [[bmc, BMC_URL], [venmo, VENMO_USER]].forEach(function (pair) {
+    if (!pair[1]) pair[0].addEventListener("click", function (e) { e.preventDefault(); soon.hidden = false; });
+  });
+
+  // Feedback: opens the email app; the address is also shown so it can be copied.
+  var fb = document.getElementById("fbLink");
+  var fbRow = document.getElementById("fbAddrRow");
+  if (FEEDBACK_EMAIL) {
+    fb.href = "mailto:" + FEEDBACK_EMAIL + "?subject=" + encodeURIComponent("Travel Day Checklist feedback");
+    document.getElementById("fbAddr").textContent = FEEDBACK_EMAIL;
+  }
+  fb.addEventListener("click", function (e) {
+    if (!FEEDBACK_EMAIL) { e.preventDefault(); document.getElementById("fbAddr").textContent = "the feedback address (coming soon)"; }
+    fbRow.hidden = false;
+  });
+  document.getElementById("fbCopy").addEventListener("click", function () {
+    var btn = this;
+    if (!FEEDBACK_EMAIL) return;
+    function done() { btn.textContent = "Copied"; }
+    try {
+      navigator.clipboard.writeText(FEEDBACK_EMAIL).then(done, selectAddr);
+    } catch (e) { selectAddr(); }
+  });
+  function selectAddr() {
+    var r = document.createRange();
+    r.selectNodeContents(document.getElementById("fbAddr"));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+
+  // Offline support when hosted as a website (ignored where not available).
+  if ("serviceWorker" in navigator && location.protocol === "https:" && /github\.io$|^localhost$/.test(location.hostname)) {
+    try { navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>
