@@ -305,10 +305,9 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 
     <section class="tipjar pink" aria-labelledby="tipTitle">
       <h2 id="tipTitle">Did this help?</h2>
-      <p>This checklist is free. If it saved you a headache on the road, you can buy me a coffee.</p>
+      <p>This checklist is free. If it saved you a headache on the road, you can buy me a coffee. Apple Pay, Google Pay and cards all work.</p>
       <div class="btn-row">
         <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Buy me a coffee</a>
-        <a class="btn" id="venmoLink" href="#" target="_blank" rel="noopener">Tip with Venmo</a>
       </div>
       <div class="soon" id="tipSoon" hidden>Tip links are coming soon. Thank you!</div>
     </section>
@@ -333,8 +332,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 <script>
 (function () {
   // Tip links: fill these in before publishing.
-  var BMC_URL = "";       // e.g. "https://buymeacoffee.com/yourname"
-  var VENMO_USER = "";    // e.g. "your-venmo-username" (no @)
+  var TIP_URL = "https://ko-fi.com/rigkit";
   var FEEDBACK_EMAIL = "rigkit31@gmail.com";
 
   var SECTIONS = [
@@ -720,13 +718,9 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 
   // Tip links
   var bmc = document.getElementById("bmcLink");
-  var venmo = document.getElementById("venmoLink");
   var soon = document.getElementById("tipSoon");
-  if (BMC_URL) bmc.href = BMC_URL;
-  if (VENMO_USER) venmo.href = "https://venmo.com/u/" + encodeURIComponent(VENMO_USER);
-  [[bmc, BMC_URL], [venmo, VENMO_USER]].forEach(function (pair) {
-    if (!pair[1]) pair[0].addEventListener("click", function (e) { e.preventDefault(); soon.hidden = false; });
-  });
+  if (TIP_URL) bmc.href = TIP_URL;
+  else bmc.addEventListener("click", function (e) { e.preventDefault(); soon.hidden = false; });
 
   // Feedback: opens the email app; the address is also shown so it can be copied.
   var fb = document.getElementById("fbLink");
