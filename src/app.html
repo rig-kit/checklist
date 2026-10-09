@@ -203,7 +203,7 @@ h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
 
 /* Info blocks */
 .info { margin-top: 28px; display: grid; gap: 14px; }
-#homeHelp, #tipTitle, #fbTitle { scroll-margin-top: 90px; }
+#homeHelp, #guide, #tipTitle, #fbTitle { scroll-margin-top: 90px; }
 details.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
 details.card summary { min-height: 60px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.15em; cursor: pointer; }
 details.card ol { margin: 0 0 16px; padding-left: 1.3em; display: grid; gap: 8px; }
@@ -221,6 +221,37 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 .fb-addr strong { color: var(--ink); overflow-wrap: anywhere; user-select: all; }
 .soon { font-size: .85em; color: var(--caution); }
 .fine { color: var(--muted); font-size: .8em; margin-top: 24px; }
+
+/* Trip name */
+.field {
+  min-height: 52px; width: 100%; min-width: 0; border-radius: 10px; border: 2px solid var(--line); padding: 0 12px;
+  font: inherit; background: var(--surface); color: var(--ink);
+}
+.trip-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1em; line-height: 1.15; color: var(--accent); overflow-wrap: anywhere; }
+.guide-link { justify-self: start; background: none; border: 0; padding: 0; min-height: 44px; color: var(--band-ink); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+
+/* Sharing */
+.sync-line { display: flex; align-items: center; gap: 8px; font-size: .85em; color: var(--muted); }
+.sync-line .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--done); flex: none; }
+.sync-line.off .dot { background: var(--caution); }
+.sharebox { margin-top: 14px; background: var(--out-soft); border-radius: 14px; padding: 18px 16px; display: grid; gap: 12px; scroll-margin-top: 90px; }
+.sharebox h2 { font-size: 1.35em; }
+.sharebox p { margin: 0; }
+.sharebox form, .sharebox > div { display: grid; gap: 12px; }
+.btn-row.col { flex-direction: column; }
+.btn-row.col .btn { width: 100%; min-height: 56px; }
+.bigcode { font-family: var(--font-display); font-weight: 700; font-size: 2.4em; letter-spacing: .12em; text-align: center; background: var(--surface); border-radius: 12px; padding: 8px; user-select: all; }
+.field.code { font-family: var(--font-display); font-weight: 700; font-size: 1.6em; letter-spacing: .15em; text-transform: uppercase; text-align: center; }
+.share-msg { font-weight: 700; color: var(--caution); }
+.share-msg.good { color: var(--done); }
+.sharebox details summary { min-height: 48px; display: flex; align-items: center; font-weight: 700; cursor: pointer; }
+.sharebox details .btn-row { padding-bottom: 4px; }
+.small { font-size: .85em; color: var(--muted); }
+
+/* Guide */
+.guide { display: grid; gap: 4px; padding-bottom: 16px; }
+.guide h3 { margin: 10px 0 2px; }
+.guide p { margin: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -231,6 +262,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
         <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>Menu
       </button>
       <nav class="menu-panel" id="menuPanel" aria-label="Menu" hidden>
+        <button type="button" id="menuGuide"><span class="mi" aria-hidden="true">❓</span>How to use this</button>
+        <button type="button" id="menuShare" hidden><span class="mi" aria-hidden="true">👥</span>Share with my travel partner</button>
         <button type="button" id="menuHome"><span class="mi" aria-hidden="true">📲</span>Put this on your home screen</button>
         <button type="button" id="menuTip"><span class="mi" aria-hidden="true">☕</span>Buy me a coffee</button>
         <button type="button" id="menuFeedback"><span class="mi" aria-hidden="true">✉️</span>Send feedback</button>
@@ -240,6 +273,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       <div class="eyebrow">For Airstream owners</div>
       <h1>Travel Day Checklist</h1>
       <p class="lede">Tap each item as you finish it. Your list is saved on this phone, even with no signal.</p>
+      <button type="button" class="guide-link" id="guideLink">New here? See what this checklist can do</button>
     </div>
     <svg class="flamingo" viewBox="0 0 100 150" aria-hidden="true" focusable="false">
       <path d="M58 58 C70 42 56 32 60 19 C63 9 77 7 81 16" fill="none" stroke="var(--flamingo)" stroke-width="7" stroke-linecap="round"/>
@@ -256,14 +290,18 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   </header>
 
   <div class="progress" aria-live="polite">
+    <div class="trip-name" id="tripLabel" hidden></div>
     <div class="progress-row">
       <span class="progress-count" id="count">0 of 0 done</span>
       <span class="progress-role" id="roleLabel"></span>
     </div>
     <div class="bar"><span id="bar"></span></div>
+    <div class="sync-line" id="syncLine" hidden><span class="dot" aria-hidden="true"></span><span id="syncText"></span></div>
   </div>
 
   <section class="panel" aria-label="Settings">
+    <label class="label" for="tripName">Name this travel day (optional)</label>
+    <input class="field" id="tripName" type="text" maxlength="60" placeholder="Like: Houston > Dallas" autocomplete="off" enterkeyhint="done">
     <div class="label" id="roleTitle">Which jobs are yours?</div>
     <div class="seg" role="group" aria-labelledby="roleTitle" id="roleSeg">
       <button type="button" data-role="outside" id="role-outside">Outside</button>
@@ -274,6 +312,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       <button type="button" class="btn quiet" id="sizeBtn">Text size: Normal</button>
       <button type="button" class="btn quiet" id="themeBtn">Dark mode</button>
       <button type="button" class="btn quiet" id="editBtn">Customize my list</button>
+      <button type="button" class="btn" id="shareBtn" hidden>Share with my travel partner</button>
     </div>
     <div class="editnote" id="editNote" hidden>
       <p><strong>Customizing.</strong> Tap Hide on anything your trailer doesn't have. Add your own items at the bottom of each section.</p>
@@ -282,6 +321,43 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
         <button type="button" class="btn quiet" id="showAll">Show all hidden items</button>
       </div>
     </div>
+  </section>
+
+  <section class="sharebox" id="sharePanel" aria-labelledby="shareTitle" hidden>
+    <h2 id="shareTitle">Share with my travel partner</h2>
+    <div id="shareStart">
+      <p>Check items off together on two phones. Every checkmark shows up on both phones within a second or two. No sign-up needed.</p>
+      <div class="btn-row col">
+        <button type="button" class="btn solid" id="shareCreate">Share my list</button>
+        <button type="button" class="btn" id="shareJoinOpen">Join my partner's list</button>
+      </div>
+    </div>
+    <form id="shareJoin" hidden>
+      <p id="joinIntro">Type the 6-letter code shown on your partner's phone.</p>
+      <input class="field code" id="joinCode" type="text" maxlength="7" placeholder="ABC-234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Share code">
+      <p class="small">The shared list will replace the checkmarks and your own items on this phone.</p>
+      <div class="btn-row">
+        <button type="submit" class="btn solid" id="joinGo">Join</button>
+        <button type="button" class="btn quiet" id="joinCancel">Cancel</button>
+      </div>
+    </form>
+    <div id="shareOn" hidden>
+      <p>This list is shared. Your partner can join by tapping the link you send, or by typing this code:</p>
+      <div class="bigcode" id="shareCode"></div>
+      <div class="btn-row col">
+        <button type="button" class="btn solid" id="shareSend">Send the link to my partner</button>
+      </div>
+      <details>
+        <summary>More sharing options</summary>
+        <div class="btn-row col">
+          <button type="button" class="btn quiet" id="shareNewCode">Make a new code</button>
+          <button type="button" class="btn danger" id="shareStop">Stop sharing on this phone</button>
+        </div>
+        <p class="small">A new code stops the old one from working. Every phone will need the new code.</p>
+      </details>
+    </div>
+    <p class="share-msg" id="shareMsg" role="status" hidden></p>
+    <button type="button" class="btn quiet" id="shareClose">Close</button>
   </section>
 
   <div class="sections" id="sections"></div>
@@ -294,7 +370,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   <div class="reset">
     <button type="button" class="btn solid" id="resetBtn">Start a new travel day</button>
     <div class="confirm" id="resetConfirm" hidden>
-      <p>This unchecks every item so you can start fresh. Your custom items stay.</p>
+      <p id="resetText">This unchecks every item and clears the trip name so you can start fresh. Your custom items stay.</p>
       <div class="btn-row">
         <button type="button" class="btn danger" id="resetYes">Yes, uncheck everything</button>
         <button type="button" class="btn quiet" id="resetNo">Cancel</button>
@@ -303,6 +379,33 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   </div>
 
   <div class="info">
+    <details class="card" id="guide">
+      <summary>How to use this checklist</summary>
+      <div class="guide">
+        <h3>Check things off</h3>
+        <p>Tap an item when it's done. Tap it again to uncheck it. Tap a section's title to fold it away.</p>
+        <h3>Split the jobs</h3>
+        <p>Under <strong>Which jobs are yours?</strong>, pick <strong>Outside</strong> or <strong>Inside</strong> to see only your half of the list. <strong>Everything</strong> shows it all.</p>
+        <h3>Name your travel day</h3>
+        <p>Type a name at the top, like "Houston &gt; Dallas". It shows above your progress while you work.</p>
+        <h3>Make it fit your trailer</h3>
+        <p>Tap <strong>Customize my list</strong>. Tap <strong>Hide</strong> on anything your trailer doesn't have, and add your own items at the bottom of each section. Items marked "If equipped" only apply to some trailers.</p>
+        <div id="guideShare" hidden>
+          <h3>Share with your travel partner</h3>
+          <p>Tap <strong>Share with my travel partner</strong>, then <strong>Share my list</strong>, and send the link to your partner's phone. When they tap it, you both see the same list and every checkmark shows up on both phones. No sign-up needed.</p>
+          <p>If your partner uses the home screen icon, have them open it, tap <strong>Share with my travel partner</strong>, then <strong>Join my partner's list</strong>, and type the 6-letter code.</p>
+        </div>
+        <h3>Start a new travel day</h3>
+        <p>Tap <strong>Start a new travel day</strong> at the bottom of the list. It unchecks everything and keeps your own items.</p>
+        <h3>Bigger text and dark mode</h3>
+        <p>Tap <strong>Text size</strong> to make the words bigger. <strong>Dark mode</strong> is easier on the eyes at night.</p>
+        <h3>Use it like an app, even with no signal</h3>
+        <p>Put it on your home screen (see below). Your list is saved on your phone and works with no signal. The screen stays on while you're checking items off.</p>
+        <h3>Is my information private?</h3>
+        <p>There's no sign-up, no ads and no tracking. Your list stays on your phone.<span id="guidePrivacyShare" hidden> If you share it, the list and its code are also kept on our sync service so both phones can see it. No names or emails are collected, and lists nobody uses for a year are deleted.</span></p>
+      </div>
+    </details>
+
     <details class="card" id="homeHelp">
       <summary>Put this on your home screen</summary>
       <h3>iPhone or iPad</h3>
@@ -352,6 +455,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   var TIP_URL = "https://ko-fi.com/rigkit";
   var VENMO_USER = "EricLolley"; // opens the Venmo app on phones that have it, with $5 and a note filled in (non-breaking spaces: Venmo shows normal ones as +)
   var FEEDBACK_EMAIL = "rigkit31@gmail.com";
+  // Live sharing between phones (the sync/ folder). Sharing stays hidden until this is set.
+  var SYNC_URL = "";
 
   var SECTIONS = [
     { id: "hookups", name: "Hookups & Utilities", who: "outside", items: [
@@ -484,11 +589,62 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       checked: s.checked || {},
       hidden: s.hidden || {},
       custom: s.custom || [],
-      closed: s.closed || {}
+      closed: s.closed || {},
+      trip: s.trip || 1,          // goes up by one each new travel day
+      name: s.name || "",
+      deleted: s.deleted || {},   // custom items deleted here, so a shared phone can't bring them back
+      sync: s.sync || null,       // { code } while shared
+      pending: s.pending || [],   // changes not yet confirmed by the sync service
+      opSeq: s.opSeq || 0
     };
   }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // Every change to the list goes through here, so a shared phone can send it on.
+  // keep in step with sync/src/state.js
+  function applyOp(s, op) {
+    switch (op.t) {
+      case "check":
+        if (op.trip !== s.trip) return false;
+        if (op.v) s.checked[op.id] = true; else delete s.checked[op.id];
+        return true;
+      case "hide":
+        if (op.v) { s.hidden[op.id] = true; delete s.checked[op.id]; } else delete s.hidden[op.id];
+        return true;
+      case "showall":
+        s.hidden = {};
+        return true;
+      case "add":
+        if (s.deleted[op.item.id] || s.custom.some(function (c) { return c.id === op.item.id; })) return false;
+        s.custom.push(op.item);
+        return true;
+      case "del":
+        s.deleted[op.id] = true;
+        s.custom = s.custom.filter(function (c) { return c.id !== op.id; });
+        delete s.checked[op.id];
+        return true;
+      case "name":
+        if (op.trip !== s.trip) return false;
+        s.name = op.v;
+        return true;
+      case "trip":
+        if (op.trip <= s.trip) return false;
+        s.trip = op.trip; s.checked = {}; s.name = op.name || "";
+        return true;
+    }
+    return false;
+  }
+  function change(op) {
+    applyOp(state, op);
+    if (state.sync) {
+      op.q = ++state.opSeq;
+      state.pending.push(op);
+      if (state.pending.length > 2000) state.pending.shift();
+      queueSend();
+    }
+    save();
   }
 
   function itemsFor(sec) {
@@ -515,6 +671,19 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   }
 
   function render() {
+    // A shared phone can redraw at any moment: keep what's being typed and where the finger was.
+    var focusId = document.activeElement && document.activeElement.id;
+    var typed = {};
+    Array.prototype.forEach.call(sectionsEl.querySelectorAll(".add-row input"), function (inp) { if (inp.value) typed[inp.id] = inp.value; });
+    draw();
+    Object.keys(typed).forEach(function (id) { var inp = document.getElementById(id); if (inp) inp.value = typed[id]; });
+    if (focusId && document.activeElement !== document.getElementById(focusId)) {
+      var f = document.getElementById(focusId);
+      if (f) f.focus({ preventScroll: true });
+    }
+  }
+
+  function draw() {
     sectionsEl.textContent = "";
     SECTIONS.forEach(function (sec) {
       if (!sectionVisible(sec)) return;
@@ -623,6 +792,9 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     document.getElementById("roleLabel").textContent = ROLE_LABEL[state.role];
     document.getElementById("bar").style.width = (total ? (done / total) * 100 : 0) + "%";
     document.getElementById("allDone").hidden = editing || !(total > 0 && done === total);
+    var tl = document.getElementById("tripLabel");
+    tl.textContent = state.name;
+    tl.hidden = !state.name;
   }
 
   function renderControls() {
@@ -637,6 +809,9 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     document.getElementById("sizeBtn").textContent = "Text size: " + SIZES[state.size];
     document.getElementById("editBtn").hidden = editing;
     document.getElementById("editNote").hidden = !editing;
+    var tn = document.getElementById("tripName");
+    if (document.activeElement !== tn) tn.value = state.name;
+    renderSync();
   }
 
   // Keep the screen awake while people work through the list (when the phone allows it).
@@ -657,9 +832,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     if (cb.type !== "checkbox") return;
     var li = cb.closest(".item");
     var id = li.dataset.id;
-    if (cb.checked) state.checked[id] = true; else delete state.checked[id];
+    change({ t: "check", id: id, v: cb.checked, trip: state.trip });
     li.classList.toggle("checked", cb.checked);
-    save();
     updateCounts();
     keepAwake();
   });
@@ -678,13 +852,9 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     var btn = e.target.closest("button[data-act]");
     if (!btn) return;
     var itemId = btn.closest(".item").dataset.id;
-    if (btn.dataset.act === "hide") { state.hidden[itemId] = true; delete state.checked[itemId]; }
-    else if (btn.dataset.act === "show") delete state.hidden[itemId];
-    else if (btn.dataset.act === "delete") {
-      state.custom = state.custom.filter(function (c) { return c.id !== itemId; });
-      delete state.checked[itemId];
-    }
-    save();
+    if (btn.dataset.act === "hide") change({ t: "hide", id: itemId, v: true });
+    else if (btn.dataset.act === "show") change({ t: "hide", id: itemId, v: false });
+    else if (btn.dataset.act === "delete") change({ t: "del", id: itemId });
     render();
     var again = document.querySelector('.item[data-id="' + itemId + '"] button');
     if (again) again.focus();
@@ -726,8 +896,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     document.getElementById("editDone").focus();
   });
   function addCustom(secId, text) {
-    state.custom.push({ id: "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), section: secId, text: text });
     delete state.closed[secId]; // make sure the new item is visible after customizing
+    change({ t: "add", item: { id: "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), section: secId, text: text } });
   }
   document.getElementById("editDone").addEventListener("click", function () {
     // Keep anything typed in an "Add your own item" box even if Add wasn't tapped.
@@ -740,18 +910,20 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     document.getElementById("editBtn").focus();
   });
   document.getElementById("showAll").addEventListener("click", function () {
-    state.hidden = {}; save(); render();
+    change({ t: "showall" }); render();
   });
 
   var resetConfirm = document.getElementById("resetConfirm");
   document.getElementById("resetBtn").addEventListener("click", function () {
+    document.getElementById("resetText").textContent = "This unchecks every item and clears the trip name so you can start fresh. Your custom items stay." +
+      (state.sync ? " Your partner's phone starts fresh too." : "");
     resetConfirm.hidden = false;
     document.getElementById("resetNo").focus();
   });
   document.getElementById("resetNo").addEventListener("click", function () { resetConfirm.hidden = true; });
   document.getElementById("resetYes").addEventListener("click", function () {
-    state.checked = {}; state.closed = {};
-    save();
+    state.closed = {};
+    change({ t: "trip", trip: state.trip + 1 });
     resetConfirm.hidden = true;
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -794,6 +966,290 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
   }
 
+  // Trip name: saved as you type, sent to a shared phone once typing pauses.
+  var tripName = document.getElementById("tripName");
+  var nameTimer = null;
+  function commitName() {
+    clearTimeout(nameTimer);
+    var v = tripName.value.trim().slice(0, 60);
+    if (v !== state.name) { change({ t: "name", v: v, trip: state.trip }); updateCounts(); }
+  }
+  tripName.addEventListener("input", function () { clearTimeout(nameTimer); nameTimer = setTimeout(commitName, 1000); });
+  tripName.addEventListener("change", commitName);
+  tripName.addEventListener("keydown", function (e) { if (e.key === "Enter") tripName.blur(); });
+
+  // ---- Sharing with a travel partner ----
+  // Each phone keeps its own copy. Changes wait in state.pending until the sync service confirms them,
+  // and every update from the service is the whole shared list, with this phone's unconfirmed taps laid on top.
+  var sync = { ws: null, open: false, phones: 0, sentUpTo: 0, sendTimer: null, retry: 1000, retryTimer: null, deadTimer: null, fails: 0 };
+  var shareMode = "main";
+  var sharePanel = document.getElementById("sharePanel");
+  var shareMsg = document.getElementById("shareMsg");
+  var joinCode = document.getElementById("joinCode");
+  var SHARED_KEYS = ["trip", "name", "checked", "hidden", "custom", "deleted"];
+
+  function prettyCode(c) { return c.slice(0, 3) + "-" + c.slice(3); }
+  function cleanCode(v) { return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function sharedPart() {
+    var s = {};
+    SHARED_KEYS.forEach(function (k) { s[k] = state[k]; });
+    return s;
+  }
+  function api(path, opts) {
+    return fetch(SYNC_URL + path, opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (body) { body.status = r.status; return body; });
+    });
+  }
+  function say(text, good) {
+    shareMsg.textContent = text || "";
+    shareMsg.hidden = !text;
+    shareMsg.classList.toggle("good", !!good);
+  }
+
+  function connect() {
+    if (!SYNC_URL || !state.sync || sync.ws) return;
+    clearTimeout(sync.retryTimer);
+    var ws, opened = false;
+    try { ws = new WebSocket(SYNC_URL.replace(/^http/, "ws") + "/rooms/" + state.sync.code + "/ws"); } catch (e) { return; }
+    sync.ws = ws;
+    ws.onopen = function () {
+      opened = true; sync.open = true; sync.retry = 1000; sync.fails = 0; sync.sentUpTo = 0;
+      sendPending();
+      renderSync();
+    };
+    ws.onmessage = function (e) {
+      clearTimeout(sync.deadTimer);
+      if (e.data === "pong") return;
+      var m;
+      try { m = JSON.parse(e.data); } catch (err) { return; }
+      receive(m);
+    };
+    ws.onclose = function () { lost(ws, opened); };
+  }
+  function lost(ws, opened) {
+    if (sync.ws !== ws) return;
+    ws.onclose = ws.onmessage = ws.onopen = null;
+    try { ws.close(); } catch (e) {}
+    sync.ws = null; sync.open = false;
+    clearTimeout(sync.deadTimer);
+    renderSync();
+    if (!state.sync) return;
+    if (!opened && ++sync.fails >= 3) {
+      // Several failed tries in a row: check whether the shared list still exists.
+      var code = state.sync.code;
+      api("/rooms/" + code).then(function (r) {
+        if (r.status === 404 && state.sync && state.sync.code === code) endSharing("gone");
+      }, function () {});
+      sync.fails = 0;
+    }
+    sync.retryTimer = setTimeout(connect, sync.retry);
+    sync.retry = Math.min(sync.retry * 2, 30000);
+  }
+  function disconnect() {
+    var ws = sync.ws;
+    sync.ws = null; sync.open = false;
+    clearTimeout(sync.retryTimer); clearTimeout(sync.deadTimer); clearTimeout(sync.sendTimer);
+    if (ws) { ws.onclose = ws.onmessage = ws.onopen = null; try { ws.close(); } catch (e) {} }
+  }
+  // A quiet check that the connection is still alive; a phone waking from sleep often has a dead one.
+  function ping() {
+    if (!sync.open) return;
+    var ws = sync.ws;
+    try { ws.send("ping"); } catch (e) { lost(ws, true); return; }
+    clearTimeout(sync.deadTimer);
+    sync.deadTimer = setTimeout(function () { lost(ws, true); }, 10000);
+  }
+  setInterval(ping, 25000);
+
+  function queueSend() {
+    clearTimeout(sync.sendTimer);
+    sync.sendTimer = setTimeout(sendPending, 800); // taps close together go in one message
+  }
+  function sendPending() {
+    clearTimeout(sync.sendTimer);
+    if (!sync.open) return;
+    var fresh = state.pending.filter(function (op) { return op.q > sync.sentUpTo; });
+    while (fresh.length) {
+      var batch = fresh.splice(0, 200);
+      sync.sentUpTo = batch[batch.length - 1].q;
+      try { sync.ws.send(JSON.stringify({ t: "ops", ops: batch, ack: sync.sentUpTo })); } catch (e) { return; }
+    }
+  }
+  function receive(m) {
+    if (m.t === "state" && m.s) {
+      if (m.ack) state.pending = state.pending.filter(function (op) { return op.q > m.ack; });
+      SHARED_KEYS.forEach(function (k) { state[k] = m.s[k]; });
+      state.pending.forEach(function (op) { applyOp(state, op); });
+      sync.phones = m.n || sync.phones;
+      save();
+      render();
+    } else if (m.t === "phones") {
+      sync.phones = m.n;
+      renderSync();
+    } else if (m.t === "gone") {
+      endSharing("gone");
+    }
+  }
+
+  function startSharing(code) {
+    disconnect();
+    state.sync = { code: code };
+    state.pending = [];
+    save();
+    shareMode = "main";
+    connect();
+    renderSync();
+  }
+  function endSharing(why) {
+    var code = state.sync && state.sync.code;
+    disconnect();
+    state.sync = null;
+    state.pending = [];
+    save();
+    shareMode = "main";
+    renderSync();
+    if (why === "gone") {
+      openShare();
+      say("Sharing ended because the code was changed or turned off on another phone. Your list is still here. Ask your partner for the new code to share again.");
+    } else if (code) {
+      say("This phone stopped sharing. Your list is still here. To share again, join with the code " + prettyCode(code) + ".", true);
+    }
+  }
+
+  function renderSync() {
+    var on = !!SYNC_URL;
+    document.getElementById("shareBtn").hidden = !on;
+    document.getElementById("menuShare").hidden = !on;
+    document.getElementById("guideShare").hidden = !on;
+    document.getElementById("guidePrivacyShare").hidden = !on;
+    var line = document.getElementById("syncLine");
+    line.hidden = !on || !state.sync;
+    if (!on) return;
+    var shareBtn = document.getElementById("shareBtn");
+    if (state.sync) {
+      var code = prettyCode(state.sync.code);
+      line.classList.toggle("off", !sync.open);
+      document.getElementById("syncText").textContent = !sync.open ? "Offline. Your taps are saved and will sync."
+        : sync.phones > 1 ? "Shared (" + code + "), " + sync.phones + " phones open"
+        : "Shared (" + code + "), only this phone is open";
+      shareBtn.textContent = "Shared: " + code;
+      document.getElementById("shareCode").textContent = code;
+    } else {
+      shareBtn.textContent = "Share with my travel partner";
+    }
+    document.getElementById("shareStart").hidden = !!state.sync || shareMode === "join";
+    document.getElementById("shareJoin").hidden = shareMode !== "join";
+    document.getElementById("shareOn").hidden = !state.sync || shareMode === "join";
+  }
+  function openShare(mode) {
+    shareMode = mode || "main";
+    say("");
+    sharePanel.hidden = false;
+    renderSync();
+    setMenu(false);
+    scrollToEl(sharePanel);
+    if (shareMode === "join") joinCode.focus({ preventScroll: true });
+  }
+
+  document.getElementById("shareBtn").addEventListener("click", function () { openShare(); });
+  document.getElementById("menuShare").addEventListener("click", function () { openShare(); });
+  document.getElementById("shareClose").addEventListener("click", function () { sharePanel.hidden = true; say(""); });
+  document.getElementById("shareJoinOpen").addEventListener("click", function () { openShare("join"); });
+  document.getElementById("joinCancel").addEventListener("click", function () {
+    shareMode = "main";
+    document.getElementById("joinIntro").textContent = "Type the 6-letter code shown on your partner's phone.";
+    say(""); renderSync();
+  });
+
+  var busy = false;
+  function newRoom() {
+    return api("/rooms", { method: "POST", body: JSON.stringify({ s: sharedPart() }) });
+  }
+  function trouble(status) {
+    if (status === 429) return "Too many tries from this connection. Please wait an hour and try again.";
+    return "Sharing isn't working right now. Please try again later.";
+  }
+  var NO_SIGNAL = "This needs an internet connection. Please try again when you have signal.";
+
+  document.getElementById("shareCreate").addEventListener("click", function () {
+    if (busy) return;
+    busy = true; say("Setting up sharing…", true);
+    newRoom().then(function (r) {
+      if (r.code) { startSharing(r.code); say("Your list is shared. Now send the link to your partner.", true); }
+      else say(trouble(r.status));
+    }, function () { say(NO_SIGNAL); }).then(function () { busy = false; });
+  });
+
+  document.getElementById("shareJoin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (busy) return;
+    var code = cleanCode(joinCode.value);
+    if (code.length !== 6) { say("The code has 6 letters and numbers, like KTR-4MW."); joinCode.focus(); return; }
+    if (state.sync && state.sync.code === code) { shareMode = "main"; renderSync(); say("This phone is already sharing that list.", true); return; }
+    busy = true; say("Joining…", true);
+    api("/rooms/" + code).then(function (r) {
+      if (r.ok) {
+        joinCode.value = "";
+        document.getElementById("joinIntro").textContent = "Type the 6-letter code shown on your partner's phone.";
+        startSharing(code);
+        say("You're in! Checkmarks now show up on both phones.", true);
+      } else if (r.status === 404) say("We couldn't find that code. Check the letters with your partner and try again.");
+      else say(trouble(r.status));
+    }, function () { say(NO_SIGNAL); }).then(function () { busy = false; });
+  });
+
+  document.getElementById("shareSend").addEventListener("click", function () {
+    if (!state.sync) return;
+    var code = state.sync.code;
+    var link = location.origin + location.pathname + "#join=" + code;
+    var text = "Let's share our Travel Day Checklist so checkmarks show up on both our phones. Tap this link: " + link +
+      "\n\nIf you use the Travel Day icon on your home screen, open it, tap Share with my travel partner, then Join my partner's list, and type this code: " + prettyCode(code);
+    if (navigator.share) {
+      navigator.share({ title: "Travel Day Checklist", text: text }).catch(function () {});
+      return;
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () {
+        say("Copied. Paste it into a text message or email to your partner.", true);
+      }, function () { say("Tell your partner this code: " + prettyCode(code), true); });
+    } catch (err) { say("Tell your partner this code: " + prettyCode(code), true); }
+  });
+
+  document.getElementById("shareStop").addEventListener("click", function () { endSharing("left"); });
+
+  document.getElementById("shareNewCode").addEventListener("click", function () {
+    if (busy || !state.sync) return;
+    if (!sync.open) { say(NO_SIGNAL); return; }
+    busy = true; say("Making a new code…", true);
+    var old = sync.ws;
+    newRoom().then(function (r) {
+      if (!r.code) { say(trouble(r.status)); return; }
+      try { old.send(JSON.stringify({ t: "retire" })); } catch (e) {}
+      startSharing(r.code);
+      say("New code ready. Send it to your partner; the old code no longer works.", true);
+    }, function () { say(NO_SIGNAL); }).then(function () { busy = false; });
+  });
+
+  window.addEventListener("online", connect);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") { if (sync.ws) ping(); else connect(); }
+    else sendPending();
+  });
+
+  // Opened from a partner's link (…#join=KTR4MW): show the Join screen with the code filled in.
+  var joinLink = location.hash.match(/^#join=([A-Za-z0-9-]{6,7})$/);
+  if (joinLink) {
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    var linkCode = cleanCode(joinLink[1]);
+    if (SYNC_URL && linkCode.length === 6 && !(state.sync && state.sync.code === linkCode)) {
+      setTimeout(function () {
+        openShare("join");
+        joinCode.value = prettyCode(linkCode);
+        document.getElementById("joinIntro").textContent = "Your travel partner invited you to share their checklist. Tap Join to see the same list on both phones.";
+      }, 0);
+    }
+  }
+
   // Top menu
   var menuBtn = document.getElementById("menuBtn");
   var menuPanel = document.getElementById("menuPanel");
@@ -806,13 +1262,25 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menuPanel.hidden) { setMenu(false); menuBtn.focus(); } });
   function goTo(el) {
     setMenu(false);
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToEl(el);
+  }
+  // Scroll so the top of el sits just below the sticky progress bar (its height changes with the trip name and sharing line).
+  function scrollToEl(el) {
+    var bar = document.querySelector(".progress").offsetHeight;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - bar - 12, behavior: "smooth" });
   }
   document.getElementById("menuHome").addEventListener("click", function () {
     var d = document.getElementById("homeHelp");
     d.open = true;
     goTo(d);
   });
+  function openGuide() {
+    var d = document.getElementById("guide");
+    d.open = true;
+    goTo(d);
+  }
+  document.getElementById("menuGuide").addEventListener("click", openGuide);
+  document.getElementById("guideLink").addEventListener("click", openGuide);
   document.getElementById("menuTip").addEventListener("click", function () {
     goTo(document.getElementById("tipTitle"));
   });
@@ -826,5 +1294,6 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   }
 
   render();
+  connect();
 })();
 </script>
