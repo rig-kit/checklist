@@ -264,9 +264,19 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 .small { font-size: .85em; color: var(--muted); }
 
 /* Guide */
-.guide { display: grid; gap: 4px; padding-bottom: 16px; }
-.guide h3 { margin: 10px 0 2px; }
-.guide p { margin: 0; }
+.guide { display: grid; padding-bottom: 6px; }
+.g-item { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
+.g-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; }
+.g-icon svg { width: 24px; height: 24px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+details.card .g-item h3 { margin: 8px 0 6px; font-size: 1.15em; color: var(--accent); }
+.g-item p { margin: 0; }
+.g-item p + p, .g-item ol + p, .g-item p + ol { margin-top: 8px; }
+details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
+.g-item li::marker { font-weight: 700; color: var(--accent); }
+.ui { font-weight: 700; background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.g-small { color: var(--muted); font-size: .88em; }
+.g-note { background: var(--both-soft); border-radius: 10px; padding: 10px 12px; font-size: .92em; }
+.g-note .ui { background: var(--surface); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -399,28 +409,82 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     <details class="card" id="guide">
       <summary>How to use this checklist</summary>
       <div class="guide">
-        <h3>Check things off</h3>
-        <p>Tap an item when it's done. Tap it again to uncheck it. Tap a section's title to fold it away.</p>
-        <h3>Split the jobs</h3>
-        <p>Under <strong>Which jobs are yours?</strong>, pick <strong>Outside</strong> or <strong>Inside</strong> to see only your half of the list. <strong>Everything</strong> shows it all.</p>
-        <h3>Name your travel day</h3>
-        <p>Type a name at the top, like "Key West &gt; Anchorage". It shows above your progress while you work.</p>
-        <h3>Make it fit your trailer</h3>
-        <p>Tap <strong>Customize my list</strong>. Tap <strong>Hide</strong> on anything your trailer doesn't have, and add your own items at the bottom of each section. Items marked "If equipped" only apply to some trailers.</p>
-        <div id="guideShare" hidden>
-          <h3>Share with your travel partner</h3>
-          <p>Tap <strong>Share with my travel partner</strong>, then <strong>Share my list</strong>, and send the link to your partner's phone. When they tap it, you both see the same list and every checkmark shows up on both phones. No sign-up needed.</p>
-          <p>If your partner uses the home screen icon, have them open it, tap <strong>Share with my travel partner</strong>, then <strong>Join my partner's list</strong>, and type the 6-letter code.</p>
-          <p>When someone joins, their phone switches to the shared list, and any items they added on their own are replaced. So the person whose list has your own items should be the one who taps <strong>Share my list</strong>.</p>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.5 3 3 5-6"/></svg></span>
+          <div>
+            <h3>Check things off</h3>
+            <p>Tap an item when it's done. Tap it again to uncheck it.</p>
+            <p>Tap a section's title to fold it away.</p>
+          </div>
         </div>
-        <h3>Start a new travel day</h3>
-        <p>Tap <strong>Start a new travel day</strong> at the bottom of the list. It unchecks everything and keeps your own items.</p>
-        <h3>Bigger text and dark mode</h3>
-        <p>Tap <strong>Text size</strong> to make the words bigger. <strong>Dark mode</strong> is easier on the eyes at night.</p>
-        <h3>Use it like an app, even with no signal</h3>
-        <p>Put it on your home screen (see below). Your list is saved on your phone and works with no signal. The screen stays on while you're checking items off.</p>
-        <h3>Is my information private?</h3>
-        <p>There's no sign-up, no ads and no tracking. Your list stays on your phone.<span id="guidePrivacyShare" hidden> If you share it, the list and its code are also kept on our sync service so both phones can see it. No names or emails are collected, and lists nobody uses for a year are deleted.</span></p>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 4v16"/></svg></span>
+          <div>
+            <h3>Split the jobs</h3>
+            <p>Under <b class="ui">Which jobs are yours?</b> pick <b class="ui">Outside</b> or <b class="ui">Inside</b> to see only your half. <b class="ui">Everything</b> shows the whole list.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.5" cy="8.5" r="1.4"/></svg></span>
+          <div>
+            <h3>Name your travel day</h3>
+            <p>Type a name at the top, like <i>Key West &gt; Anchorage</i>. It stays in view while you work.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2"/></svg></span>
+          <div>
+            <h3>Make it fit your trailer</h3>
+            <ol>
+              <li>Tap <b class="ui">Customize my list</b>.</li>
+              <li>Tap <b class="ui">Hide</b> on anything your trailer doesn't have.</li>
+              <li>Add your own items at the bottom of any section.</li>
+            </ol>
+            <p class="g-small">"If equipped" items only apply to some trailers.</p>
+          </div>
+        </div>
+        <div class="g-item" id="guideShare" hidden>
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.4c2.1.7 3.5 2.8 3.5 5.6"/></svg></span>
+          <div>
+            <h3>Share with your travel partner</h3>
+            <p>Both phones see the same list, and every checkmark shows up on both. No sign-up.</p>
+            <ol>
+              <li>Tap <b class="ui">Share with my travel partner</b>, then <b class="ui">Share my list</b>.</li>
+              <li>Tap <b class="ui">Send the link to my partner</b> and text it to them.</li>
+              <li>Your partner taps the link, then <b class="ui">Join</b>.</li>
+            </ol>
+            <p class="g-note"><strong>Using the home screen icon?</strong> Open it, tap <b class="ui">Share with my travel partner</b>, then <b class="ui">Join my partner's list</b>, and type the 6-letter code.</p>
+            <p class="g-note"><strong>Tip:</strong> Joining replaces the items the joining phone added itself. Let whoever has the custom items tap <b class="ui">Share my list</b>.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/></svg></span>
+          <div>
+            <h3>Start a new travel day</h3>
+            <p>Tap <b class="ui">Start a new travel day</b> at the bottom. It unchecks everything and keeps your own items.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 19 9 5l5 14"/><path d="M5.8 14h6.4"/><path d="M15 12.5a2.8 2.8 0 0 1 5 1.7V19"/><path d="M20 16.2c-3.5-.5-5.3.4-5.3 1.6 0 1.6 3.3 1.8 5.3-.3"/></svg></span>
+          <div>
+            <h3>Bigger text and dark mode</h3>
+            <p>Tap <b class="ui">Text size</b> to make the words bigger. <b class="ui">Dark mode</b> is easier on the eyes at night.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7"/><path d="M8.5 11h7"/><path d="M10.5 18.5h3"/></svg></span>
+          <div>
+            <h3>Use it like an app</h3>
+            <p>Put it on your home screen (steps below). It works with no signal, and the screen stays on while you check items off.</p>
+          </div>
+        </div>
+        <div class="g-item">
+          <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span>
+          <div>
+            <h3>Is my information private?</h3>
+            <p>No sign-up, no ads, no tracking. Your list stays on your phone.<span id="guidePrivacyShare" hidden> If you share it, the list and its code are also kept on our sync service so both phones can see it. No names or emails are collected, and unused lists are deleted after a year.</span></p>
+          </div>
+        </div>
       </div>
     </details>
 
