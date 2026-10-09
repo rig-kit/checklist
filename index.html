@@ -367,7 +367,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 (function () {
   // Tip links: fill these in before publishing.
   var TIP_URL = "https://ko-fi.com/rigkit";
-  var VENMO_USER = "EricLolley"; // opens the Venmo app on phones that have it, with $5 and a note filled in
+  var VENMO_USER = "EricLolley"; // opens the Venmo app on phones that have it, with $5 and a note filled in (no spaces: Venmo shows them as +)
   var FEEDBACK_EMAIL = "rigkit31@gmail.com";
 
   var SECTIONS = [
@@ -769,7 +769,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   if (VENMO_USER) {
     var venmo = document.getElementById("venmoLink");
     venmo.href = "https://venmo.com/" + encodeURIComponent(VENMO_USER) +
-      "?txn=pay&amount=5&note=" + encodeURIComponent("Travel Day Checklist tip 🦩");
+      "?txn=pay&amount=5&note=" + encodeURIComponent("TravelDayChecklist🦩");
     venmo.hidden = false;
   }
   else bmc.addEventListener("click", function (e) { e.preventDefault(); soon.hidden = false; });
