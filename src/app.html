@@ -80,7 +80,6 @@ button { font: inherit; color: inherit; }
 .mast-text { display: grid; gap: 8px; min-width: 0; }
 .eyebrow { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .78em; color: var(--band-muted); }
 h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
-.lede { margin: 0; color: var(--band-muted); max-width: 36em; }
 .flamingo { width: 76px; height: auto; margin-bottom: -6px; }
 /* Easter egg: tap the flamingo */
 .flamingo { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -238,7 +237,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   font: inherit; background: var(--surface); color: var(--ink);
 }
 .trip-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1em; line-height: 1.15; color: var(--accent); overflow-wrap: anywhere; }
-.guide-link { justify-self: start; background: none; border: 0; padding: 0; min-height: 44px; color: var(--band-ink); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.guide-link { justify-self: start; background: none; border: 0; padding: 0; min-height: 44px; color: var(--band-muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
 
 /* Sharing */
 .sync-line { display: flex; align-items: center; gap: 8px; font-size: .85em; color: var(--muted); }
@@ -292,7 +291,6 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     <div class="mast-text">
       <div class="eyebrow">For Airstream owners</div>
       <h1>Travel Day Checklist</h1>
-      <p class="lede">Tap each item as you finish it. Your list is saved on this phone, even with no signal.</p>
       <button type="button" class="guide-link" id="guideLink">New here? See what this checklist can do</button>
     </div>
     <svg class="flamingo" viewBox="0 0 100 150" aria-hidden="true" focusable="false">
