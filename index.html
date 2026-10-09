@@ -84,7 +84,7 @@ button { font: inherit; color: inherit; }
 /* Header */
 .masthead {
   background: var(--band); color: var(--band-ink);
-  margin-inline: -16px; padding: 22px 16px 34px; border-radius: 0 0 20px 20px;
+  margin-inline: -16px; padding: 70px 16px 34px; border-radius: 0 0 20px 20px;
   display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: end; position: relative;
 }
 .masthead::after {
@@ -97,6 +97,26 @@ button { font: inherit; color: inherit; }
 h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
 .lede { margin: 0; color: var(--band-muted); max-width: 36em; }
 .flamingo { width: 76px; height: auto; margin-bottom: -6px; }
+.mast-text { padding-right: 4px; }
+.menu-wrap { position: absolute; top: 14px; right: 12px; z-index: 20; }
+.menu-btn {
+  min-height: 44px; padding: 0 14px; border-radius: 99px; cursor: pointer;
+  background: rgba(255,255,255,.14); border: 1.5px solid var(--band-muted); color: var(--band-ink);
+  font-family: var(--font-display); font-weight: 700; font-size: .95em; display: inline-flex; align-items: center; gap: 8px;
+}
+.menu-btn .bars { width: 18px; height: 12px; display: grid; align-content: space-between; }
+.menu-btn .bars i { display: block; height: 2px; border-radius: 1px; background: currentColor; }
+.menu-panel {
+  position: absolute; right: 0; top: calc(100% + 8px); width: min(300px, calc(100vw - 32px));
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 6px; display: grid;
+}
+.menu-panel a, .menu-panel button {
+  min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 14px; border-radius: 10px;
+  text-decoration: none; color: var(--ink); background: none; border: 0; font: inherit; font-weight: 700; text-align: left; cursor: pointer;
+}
+.menu-panel a:hover, .menu-panel button:hover { background: var(--accent-soft); }
+.menu-panel .mi { width: 28px; text-align: center; font-size: 1.15em; }
 
 /* Sticky progress */
 .progress {
@@ -198,6 +218,7 @@ h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
 
 /* Info blocks */
 .info { margin-top: 28px; display: grid; gap: 14px; }
+#homeHelp, #tipTitle, #fbTitle { scroll-margin-top: 90px; }
 details.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
 details.card summary { min-height: 60px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.15em; cursor: pointer; }
 details.card ol { margin: 0 0 16px; padding-left: 1.3em; display: grid; gap: 8px; }
@@ -220,6 +241,16 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 <body>
 <div class="wrap">
   <header class="masthead">
+    <div class="menu-wrap">
+      <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menuPanel">
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>Menu
+      </button>
+      <nav class="menu-panel" id="menuPanel" aria-label="Menu" hidden>
+        <button type="button" id="menuHome"><span class="mi" aria-hidden="true">📲</span>Put this on your home screen</button>
+        <a id="menuTip" href="#" target="_blank" rel="noopener"><span class="mi" aria-hidden="true">💸</span>Send me a tip</a>
+        <button type="button" id="menuFeedback"><span class="mi" aria-hidden="true">✉️</span>Send feedback</button>
+      </nav>
+    </div>
     <div class="mast-text">
       <div class="eyebrow">For Airstream owners</div>
       <h1>Travel Day Checklist</h1>
@@ -307,7 +338,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       <h2 id="tipTitle">Did this help? Send me a tip! 💸</h2>
       <p>This checklist is free. If it saved you a headache on the road, you can buy me a coffee. Apple Pay, Google Pay and cards all work.</p>
       <div class="btn-row">
-        <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Buy me a coffee</a>
+        <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Send me a tip 💸</a>
       </div>
       <div class="soon" id="tipSoon" hidden>Tip links are coming soon. Thank you!</div>
     </section>
@@ -730,7 +761,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   // Tip links
   var bmc = document.getElementById("bmcLink");
   var soon = document.getElementById("tipSoon");
-  if (TIP_URL) bmc.href = TIP_URL;
+  if (TIP_URL) { bmc.href = TIP_URL; document.getElementById("menuTip").href = TIP_URL; }
   else bmc.addEventListener("click", function (e) { e.preventDefault(); soon.hidden = false; });
 
   // Feedback: opens the email app; the address is also shown so it can be copied.
@@ -757,6 +788,33 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     r.selectNodeContents(document.getElementById("fbAddr"));
     var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
   }
+
+  // Top menu
+  var menuBtn = document.getElementById("menuBtn");
+  var menuPanel = document.getElementById("menuPanel");
+  function setMenu(open) {
+    menuPanel.hidden = !open;
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  menuBtn.addEventListener("click", function (e) { e.stopPropagation(); setMenu(menuPanel.hidden); });
+  document.addEventListener("click", function (e) { if (!menuPanel.hidden && !menuPanel.contains(e.target)) setMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menuPanel.hidden) { setMenu(false); menuBtn.focus(); } });
+  function goTo(el) {
+    setMenu(false);
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  document.getElementById("menuHome").addEventListener("click", function () {
+    var d = document.getElementById("homeHelp");
+    d.open = true;
+    goTo(d);
+  });
+  document.getElementById("menuTip").addEventListener("click", function (e) {
+    if (!TIP_URL) { e.preventDefault(); goTo(document.getElementById("tipTitle")); }
+    setMenu(false);
+  });
+  document.getElementById("menuFeedback").addEventListener("click", function () {
+    goTo(document.getElementById("fbTitle"));
+  });
 
   // Offline support when hosted as a website (ignored where not available).
   if ("serviceWorker" in navigator && location.protocol === "https:" && /github\.io$|^localhost$/.test(location.hostname)) {
