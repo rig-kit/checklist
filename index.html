@@ -432,7 +432,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       ["c4", "Microwave glass tray removed or padded", 1, "Trays often break in transit."],
       ["c5", "Fridge set for travel, following your fridge's manual", 0, "Many fridges have a night or eco mode. It's fine when the fridge is already cold or it's cool out. Use normal mode in hot weather or with perishable food."],
       ["c6", "Fridge and freezer doors latched"],
-      ["c7", "Pantry, cabinets and drawers latched"]
+      ["c7", "Pantry, cabinets and drawers latched"],
+      ["c8", "Kitchen windows closed and latched"]
     ]},
     { id: "bath", name: "Bathroom & Shower", who: "inside", items: [
       ["b1", "Counter and shelf items put away"],
@@ -440,21 +441,32 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       ["b3", "Shower head set on the shower floor"],
       ["b4", "Shower door closed and locked"],
       ["b5", "Toilet lid down"],
-      ["b6", "Cabinets and drawers closed"]
+      ["b6", "Cabinets and drawers closed"],
+      ["b7", "Bathroom window closed and latched"],
+      ["b8", "Bathroom roof vent and fan closed", 0, "The bathroom vent is one of the most often forgotten."]
     ]},
-    { id: "living", name: "Bedroom & Living Area", who: "inside", items: [
-      ["l1", "Nightstands and tables cleared"],
+    { id: "living", name: "Living Area & Dinette", who: "inside", items: [
+      ["l1", "Dinette, tables and shelves cleared"],
+      ["l7", "Table secured or lowered", 1],
       ["l2", "TV locked to its mount or stowed", 1],
       ["l3", "Overhead lockers, cabinets and drawers latched"],
-      ["l4", "Under-bed storage latched"],
       ["l5", "Loose decor and wall items stowed"],
-      ["l6", "Loose chairs or stools inside secured"]
+      ["l6", "Loose chairs or stools secured"],
+      ["l8", "Living area windows closed and latched"],
+      ["l9", "Living area roof vent, fan and skylight closed"],
+      ["l10", "Living area blinds and shades set for travel"]
+    ]},
+    { id: "bedroom", name: "Bedroom", who: "inside", items: [
+      ["r1", "Nightstands, shelves and bed cleared of loose items"],
+      ["r2", "Bedroom TV locked to its mount or stowed", 1],
+      ["r3", "Wardrobe and closet doors latched", 0, "Closet doors often swing open on bumpy roads."],
+      ["r4", "Overhead lockers and drawers latched"],
+      ["l4", "Under-bed storage latched"],
+      ["s1", "Bedroom windows closed and latched"],
+      ["r5", "Bedroom roof vent, fan and skylight closed"],
+      ["r6", "Bedroom blinds and shades set for travel"]
     ]},
     { id: "systems", name: "Systems & Power", who: "inside", items: [
-      ["s1", "Bedroom windows closed and latched"],
-      ["s2", "Living area and bathroom windows closed and latched"],
-      ["s3", "Blinds and shades set for travel, including skylight shades"],
-      ["s4", "Roof vents, fans and skylights closed"],
       ["s5", "Air conditioner and furnace off"],
       ["s6", "Water pump off"],
       ["s7", "Water heater off"],
