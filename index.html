@@ -562,6 +562,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
         inp.placeholder = "Add your own item";
         inp.setAttribute("aria-label", "Add your own item to " + sec.name);
         inp.maxLength = 120;
+        inp.setAttribute("enterkeyhint", "done");
         var ab = el("button", "btn solid", "Add");
         ab.type = "submit";
         add.appendChild(inp);
@@ -666,7 +667,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     var text = inp.value.trim();
     if (!text) { inp.focus(); return; }
     var secId = form.dataset.sec;
-    state.custom.push({ id: "u" + Date.now().toString(36), section: secId, text: text });
+    addCustom(secId, text);
     save();
     render();
     var f = document.getElementById("add-" + secId);
@@ -694,7 +695,17 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     editing = true; render();
     document.getElementById("editDone").focus();
   });
+  function addCustom(secId, text) {
+    state.custom.push({ id: "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), section: secId, text: text });
+    delete state.closed[secId]; // make sure the new item is visible after customizing
+  }
   document.getElementById("editDone").addEventListener("click", function () {
+    // Keep anything typed in an "Add your own item" box even if Add wasn't tapped.
+    Array.prototype.forEach.call(sectionsEl.querySelectorAll(".add-row"), function (form) {
+      var text = form.querySelector("input").value.trim();
+      if (text) addCustom(form.dataset.sec, text);
+    });
+    save();
     editing = false; render();
     document.getElementById("editBtn").focus();
   });
