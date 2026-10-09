@@ -89,8 +89,9 @@ h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
 .flamingo.flap .wing { animation: flap .18s ease-in-out 5; opacity: 1; }
 @keyframes flap { 50% { transform: rotate(70deg) scale(1.45); } }
 @keyframes hop { 30%, 60% { transform: translateY(-8px); } }
-.road-trip { position: fixed; left: 0; bottom: 16vh; width: 300px; height: auto; z-index: 50; pointer-events: none; animation: drive 2.4s linear forwards; }
-@keyframes drive { from { transform: translateX(-310px); } to { transform: translateX(calc(100vw + 10px)); } }
+.road { position: absolute; left: 0; right: 0; bottom: 0; height: 70px; overflow: hidden; border-radius: 0 0 20px 20px; pointer-events: none; z-index: 2; }
+.road-trip { position: absolute; bottom: 8px; left: -230px; width: 220px; height: auto; animation: drive 3s linear forwards; }
+@keyframes drive { to { left: 100%; } }
 .mast-text { padding-right: 4px; }
 .menu-wrap { position: absolute; top: 14px; right: 12px; z-index: 20; }
 .menu-btn {
@@ -1367,30 +1368,52 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     try { navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
   }
 
-  // Easter egg: the flamingo flaps and a truck and Airstream drive by.
-  var ROAD_TRIP = '<svg class="road-trip" viewBox="0 0 300 80" aria-hidden="true">' +
-    '<rect x="4" y="10" width="160" height="50" rx="25" fill="#dfe4e8" stroke="#8f9aa3" stroke-width="2"/>' +
-    '<path d="M14 24h140M10 46h148" stroke="#c3cad0" stroke-width="2"/>' +
-    '<rect x="22" y="23" width="28" height="13" rx="5" fill="#4d6472"/><rect x="118" y="23" width="28" height="13" rx="5" fill="#4d6472"/>' +
-    '<rect x="70" y="22" width="18" height="34" rx="3" fill="#cfd6db" stroke="#8f9aa3" stroke-width="2"/>' +
-    '<path d="M164 50h26" stroke="#55606a" stroke-width="4" stroke-linecap="round"/>' +
-    '<circle cx="96" cy="62" r="10" fill="#232a30"/><circle cx="96" cy="62" r="4" fill="#b9c1c7"/>' +
-    '<rect x="186" y="34" width="52" height="22" rx="3" fill="#d9407f"/>' +
-    '<path d="M236 56V22q0-6 6-6h20l14 16h14q6 0 6 6v18z" fill="#d9407f"/>' +
-    '<path d="M243 21h17l10 11h-27z" fill="#bfe3ec"/>' +
-    '<circle cx="207" cy="60" r="10" fill="#232a30"/><circle cx="207" cy="60" r="4" fill="#b9c1c7"/>' +
-    '<circle cx="277" cy="60" r="10" fill="#232a30"/><circle cx="277" cy="60" r="4" fill="#b9c1c7"/>' +
-    '<rect x="290" y="38" width="6" height="5" rx="2" fill="#f2b01e"/></svg>';
+  // Easter egg: the flamingo flaps and a truck towing an Airstream drives along the bottom of the header.
+  var TRUCK_COLORS = ["#d9407f", "#2b7bd6", "#d6372a", "#2f9e58", "#f2b01e", "#7a4fd1", "#f07a1a", "#26323b", "#0b6577", "#8fd3e8"];
+  var lastTruck = -1;
+  function roadTrip(color) {
+    return '<svg class="road-trip" viewBox="0 0 312 74" aria-hidden="true">' +
+      '<defs><linearGradient id="alu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfcfd"/><stop offset=".45" stop-color="#d5dce1"/><stop offset=".7" stop-color="#eef1f3"/><stop offset="1" stop-color="#a3adb5"/></linearGradient>' +
+      '<clipPath id="shell"><path d="M16 54C5 54 3 42 6 33 11 17 32 10 62 10h68c30 0 49 7 54 23 3 9 1 21-10 21z"/></clipPath></defs>' +
+      '<ellipse cx="150" cy="68" rx="150" ry="3.5" fill="rgba(0,0,0,.22)"/>' +
+      // Airstream: polished aluminum shell with riveted panel seams
+      '<path d="M182 49h22" stroke="#4a545c" stroke-width="4" stroke-linecap="round"/>' +
+      '<rect x="186" y="37" width="7" height="12" rx="3" fill="#f4f6f7" stroke="#8a959d"/>' +
+      '<path d="M16 54C5 54 3 42 6 33 11 17 32 10 62 10h68c30 0 49 7 54 23 3 9 1 21-10 21z" fill="url(#alu)" stroke="#78838c" stroke-width="1.6"/>' +
+      '<g clip-path="url(#shell)" stroke="#b6bfc6" stroke-width="1"><path d="M34 8v50M58 8v50M88 8v50M118 8v50M148 8v50M172 8v50"/><path d="M0 41h190" stroke="#c4ccd2"/><path d="M0 47h190" stroke="#2c6fa3" stroke-width="2"/></g>' +
+      '<g fill="#b6bfc6"><circle cx="34" cy="15" r=".9"/><circle cx="58" cy="12" r=".9"/><circle cx="88" cy="11" r=".9"/><circle cx="118" cy="11" r=".9"/><circle cx="148" cy="12" r=".9"/></g>' +
+      '<rect x="18" y="22" width="20" height="10" rx="4" fill="#3d505d"/>' +
+      '<rect x="104" y="20" width="30" height="12" rx="4" fill="#3d505d"/><path d="M107 23h10" stroke="#9fb6c4" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<path d="M158 17c11 2 18 7 22 15h-22z" fill="#3d505d"/><path d="M162 21c5 1 9 3 12 6" stroke="#9fb6c4" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
+      '<rect x="64" y="19" width="19" height="31" rx="3" fill="#e3e8ec" stroke="#78838c" stroke-width="1.2"/><rect x="67.5" y="22.5" width="12" height="8" rx="2.5" fill="#3d505d"/><circle cx="80" cy="37" r="1.1" fill="#78838c"/>' +
+      '<path d="M88 55a14 9 0 0 1 44 0z" fill="#59636b"/>' +
+      '<circle cx="101" cy="58" r="8" fill="#222a30"/><circle cx="101" cy="58" r="3.6" fill="#c9d0d5"/>' +
+      '<circle cx="119" cy="58" r="8" fill="#222a30"/><circle cx="119" cy="58" r="3.6" fill="#c9d0d5"/>' +
+      // Pickup truck in this trip's color
+      '<path d="M204 31h43V19q0-5 5-5h16l12 17h20q6 0 6 6v13q0 4-4 4H204z" fill="' + color + '" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/>' +
+      '<path d="M252 18h14l9.5 13H252z" fill="#bfe3ec"/><path d="M248 33v17" stroke="rgba(0,0,0,.3)"/>' +
+      '<path d="M210 35h32" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>' +
+      '<rect x="244" y="22" width="5" height="6" rx="1.5" fill="#26323b"/>' +
+      '<rect x="203" y="34" width="3" height="6" rx="1" fill="#e0402f"/><rect x="301" y="38" width="5" height="5" rx="1.5" fill="#ffd25e"/>' +
+      '<rect x="300" y="49" width="10" height="5" rx="2" fill="#9aa4ab"/>' +
+      '<path d="M210 54a13 12 0 0 1 26 0zM273 54a13 12 0 0 1 26 0z" fill="rgba(0,0,0,.35)"/>' +
+      '<circle cx="223" cy="58" r="9" fill="#222a30"/><circle cx="223" cy="58" r="4" fill="#c9d0d5"/>' +
+      '<circle cx="286" cy="58" r="9" fill="#222a30"/><circle cx="286" cy="58" r="4" fill="#c9d0d5"/></svg>';
+  }
   var flamingo = document.querySelector(".flamingo");
+  var road = document.createElement("div");
+  road.className = "road";
+  document.querySelector(".masthead").appendChild(road);
   flamingo.addEventListener("click", function () {
     if (flamingo.classList.contains("flap")) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     flamingo.classList.add("flap");
     setTimeout(function () { flamingo.classList.remove("flap"); }, 950);
-    var holder = document.createElement("div");
-    holder.innerHTML = ROAD_TRIP;
-    var rig = holder.firstChild;
-    document.body.appendChild(rig);
+    var pick;
+    do { pick = Math.floor(Math.random() * TRUCK_COLORS.length); } while (pick === lastTruck);
+    lastTruck = pick;
+    road.innerHTML = roadTrip(TRUCK_COLORS[pick]);
+    var rig = road.firstChild;
     rig.addEventListener("animationend", function () { rig.remove(); });
   });
 
