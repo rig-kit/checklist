@@ -4,7 +4,7 @@ Usage: python3 tools/build.py [output folder]   (default: site/)
 """
 import pathlib
 import sys
-from PIL import Image, ImageDraw
+from PIL import Image
 
 root = pathlib.Path(__file__).resolve().parent.parent
 app = (root / "src" / "app.html").read_text()
@@ -38,8 +38,8 @@ html = head + app[:body_start] + "</head>\n<body>\n" + app[body_start:] + "\n</b
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eceff2",
-  "theme_color": "#0c5a6b",
+  "background_color": "#0b6577",
+  "theme_color": "#0b6577",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
@@ -49,7 +49,7 @@ html = head + app[:body_start] + "</head>\n<body>\n" + app[body_start:] + "\n</b
 """)
 
 (site / "sw.js").write_text("""// Keeps the checklist working with no signal: pages load fresh when online, everything falls back to the saved copy offline.
-const CACHE = "travel-day-v2";
+const CACHE = "travel-day-v3";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
@@ -75,17 +75,8 @@ self.addEventListener("fetch", e => {
 """)
 
 def icon(size, path):
-    s = size
-    img = Image.new("RGB", (s, s), (12, 90, 107))
-    d = ImageDraw.Draw(img)
-    # Aluminum trailer silhouette with a check mark.
-    m = s * 0.16
-    d.rounded_rectangle([m, s * 0.30, s - m, s * 0.68], radius=int(s * 0.17), fill=(226, 231, 236))
-    d.ellipse([s * 0.30, s * 0.60, s * 0.44, s * 0.74], fill=(26, 36, 48))
-    d.line([s - m, s * 0.62, s * 0.92, s * 0.62], fill=(226, 231, 236), width=max(2, int(s * 0.03)))
-    w = max(3, int(s * 0.06))
-    d.line([s * 0.40, s * 0.47, s * 0.48, s * 0.55, s * 0.64, s * 0.39], fill=(35, 117, 74), width=w, joint="curve")
-    img.save(site / path)
+    # Flamingo on retro teal, rendered once to src/icon-source.png (512px, full-bleed so iOS can round the corners).
+    Image.open(root / "src" / "icon-source.png").convert("RGB").resize((size, size), Image.LANCZOS).save(site / path)
 
 icon(192, "icon-192.png")
 icon(512, "icon-512.png")
