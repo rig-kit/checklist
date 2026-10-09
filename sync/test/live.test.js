@@ -7,6 +7,7 @@ const BASE = process.env.SYNC_TEST_URL || "http://localhost:8787";
 const ORIGIN = process.env.SYNC_TEST_ORIGIN || "http://localhost:8000";
 const up = await fetch(BASE + "/").then(r => r.ok, () => false);
 const opts = { skip: up ? false : "sync service not running" };
+if (!up && process.env.SYNC_TEST_URL) throw new Error("sync service not reachable at " + BASE);
 
 async function create(s) {
   const r = await fetch(BASE + "/rooms", { method: "POST", headers: { Origin: ORIGIN, "Content-Type": "application/json" }, body: JSON.stringify({ s }) });
