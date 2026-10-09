@@ -112,11 +112,11 @@ h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
   box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 6px; display: grid;
 }
 .menu-panel a, .menu-panel button {
-  min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 14px; border-radius: 10px;
+  min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-radius: 10px;
   text-decoration: none; color: var(--ink); background: none; border: 0; font: inherit; font-weight: 700; text-align: left; cursor: pointer;
 }
 .menu-panel a:hover, .menu-panel button:hover { background: var(--accent-soft); }
-.menu-panel .mi { width: 28px; text-align: center; font-size: 1.15em; }
+.menu-panel .mi { width: 26px; height: 26px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Sticky progress */
 .progress {
@@ -279,11 +279,11 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
         <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>Menu
       </button>
       <nav class="menu-panel" id="menuPanel" aria-label="Menu" hidden>
-        <button type="button" id="menuGuide"><span class="mi" aria-hidden="true">❓</span>How to use this</button>
-        <button type="button" id="menuShare" hidden><span class="mi" aria-hidden="true">👥</span>Share with my travel partner</button>
-        <button type="button" id="menuHome"><span class="mi" aria-hidden="true">📲</span>Put this on your home screen</button>
-        <button type="button" id="menuTip"><span class="mi" aria-hidden="true">☕</span>Buy me a coffee</button>
-        <button type="button" id="menuFeedback"><span class="mi" aria-hidden="true">✉️</span>Send feedback</button>
+        <button type="button" id="menuGuide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4"/><path d="M12 17.6h.01"/></svg>How to use this</button>
+        <button type="button" id="menuShare" hidden><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.4c2.1.7 3.5 2.8 3.5 5.6"/></svg>Share with my travel partner</button>
+        <button type="button" id="menuHome"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7"/><path d="M8.5 11h7"/><path d="M10.5 18.5h3"/></svg>Put this on your home screen</button>
+        <button type="button" id="menuTip"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 2.8c-.6 1 .6 1.7 0 2.7"/><path d="M12 2.8c-.6 1 .6 1.7 0 2.7"/></svg>Buy me a coffee</button>
+        <button type="button" id="menuFeedback"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 6.5 9 6.5 9-6.5"/></svg>Send feedback</button>
       </nav>
     </div>
     <div class="mast-text">
@@ -411,6 +411,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
           <h3>Share with your travel partner</h3>
           <p>Tap <strong>Share with my travel partner</strong>, then <strong>Share my list</strong>, and send the link to your partner's phone. When they tap it, you both see the same list and every checkmark shows up on both phones. No sign-up needed.</p>
           <p>If your partner uses the home screen icon, have them open it, tap <strong>Share with my travel partner</strong>, then <strong>Join my partner's list</strong>, and type the 6-letter code.</p>
+          <p>When someone joins, their phone switches to the shared list, and any items they added on their own are replaced. So the person whose list has your own items should be the one who taps <strong>Share my list</strong>.</p>
         </div>
         <h3>Start a new travel day</h3>
         <p>Tap <strong>Start a new travel day</strong> at the bottom of the list. It unchecks everything and keeps your own items.</p>
