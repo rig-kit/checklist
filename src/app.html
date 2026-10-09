@@ -232,7 +232,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
       </button>
       <nav class="menu-panel" id="menuPanel" aria-label="Menu" hidden>
         <button type="button" id="menuHome"><span class="mi" aria-hidden="true">📲</span>Put this on your home screen</button>
-        <a id="menuTip" href="#" target="_blank" rel="noopener"><span class="mi" aria-hidden="true">💸</span>Send me a tip</a>
+        <button type="button" id="menuTip"><span class="mi" aria-hidden="true">💸</span>Send me a tip</button>
         <button type="button" id="menuFeedback"><span class="mi" aria-hidden="true">✉️</span>Send feedback</button>
       </nav>
     </div>
@@ -748,7 +748,7 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
   // Tip links
   var bmc = document.getElementById("bmcLink");
   var soon = document.getElementById("tipSoon");
-  if (TIP_URL) { bmc.href = TIP_URL; document.getElementById("menuTip").href = TIP_URL; }
+  if (TIP_URL) { bmc.href = TIP_URL; }
   if (VENMO_USER) {
     var venmo = document.getElementById("venmoLink");
     venmo.href = "https://venmo.com/" + encodeURIComponent(VENMO_USER) +
@@ -801,9 +801,8 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
     d.open = true;
     goTo(d);
   });
-  document.getElementById("menuTip").addEventListener("click", function (e) {
-    if (!TIP_URL) { e.preventDefault(); goTo(document.getElementById("tipTitle")); }
-    setMenu(false);
+  document.getElementById("menuTip").addEventListener("click", function () {
+    goTo(document.getElementById("tipTitle"));
   });
   document.getElementById("menuFeedback").addEventListener("click", function () {
     goTo(document.getElementById("fbTitle"));
