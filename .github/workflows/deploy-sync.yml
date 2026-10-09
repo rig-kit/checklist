@@ -29,3 +29,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Check two phones can share on the live service
+        if: env.HAS_TOKEN == 'true'
+        run: sleep 10 && npm test
+        env:
+          SYNC_TEST_URL: https://checklist-sync.rigkit31.workers.dev
+          SYNC_TEST_ORIGIN: https://rig-kit.github.io
