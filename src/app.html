@@ -1,7 +1,7 @@
 <title>Travel Day Checklist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: one narrow column like a clipboard; retro-teal riveted header band with a lawn flamingo, sticky progress strip, big tappable rows color-coded Outside (teal) / Inside (flamingo) / Both (sunshine) */
 :root {
@@ -28,8 +28,9 @@
   --caution: #8a4b00;
   --caution-soft: #fbecd6;
   --rivet: #b6bec7;
-  --font-display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  /* Clean, soft sans close to Aptos (Aptos itself is used where the device has it) */
+  --font-display: "Aptos", "Figtree", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Aptos", "Figtree", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --fs: 16px;
 }
 @media (prefers-color-scheme: dark) {
@@ -79,7 +80,7 @@ button { font: inherit; color: inherit; }
 }
 .mast-text { display: grid; gap: 8px; min-width: 0; }
 .eyebrow { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .78em; color: var(--band-muted); }
-h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
+h1 { font-size: 2em; line-height: 1.08; font-weight: 700; letter-spacing: -.01em; }
 .flamingo { width: 76px; height: auto; margin-bottom: -6px; }
 /* Easter egg: tap the flamingo */
 .flamingo { cursor: pointer; -webkit-tap-highlight-color: transparent; }
