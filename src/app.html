@@ -224,7 +224,7 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .alldone { margin-top: 18px; background: var(--done); color: var(--surface); border-radius: 14px; padding: 18px; display: grid; gap: 4px; }
 .alldone h2 { font-size: 1.5em; }
 .alldone p { margin: 0; }
-.alldone .btn { margin-top: 10px; background: var(--surface); color: var(--done); border-color: var(--surface); min-height: 56px; }
+.alldone .btn { margin-top: 10px; background: var(--surface); color: var(--ink); border-color: var(--surface); min-height: 56px; }
 
 /* Reset */
 .confirm { background: var(--caution-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; }
@@ -457,7 +457,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   </div>
 
   <div class="info">
-    <details class="card" id="guide">
+    <details class="card" id="guide" hidden>
       <summary>How to use this checklist</summary>
       <div class="guide">
         <div class="g-item">
@@ -526,7 +526,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7"/><path d="M8.5 11h7"/><path d="M10.5 18.5h3"/></svg></span>
           <div>
             <h3>Use it like an app</h3>
-            <p>Put it on your home screen (steps below). It works with no signal, and the screen stays on while you check items off.</p>
+            <p>Put it on your home screen: open the <b class="ui">Menu</b> and tap <b class="ui">Put this on your home screen</b>. It works with no signal, and the screen stays on while you check items off.</p>
           </div>
         </div>
         <div class="g-item">
@@ -539,7 +539,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       </div>
     </details>
 
-    <details class="card" id="homeHelp">
+    <details class="card" id="homeHelp" hidden>
       <summary>Put this on your home screen</summary>
       <h3>iPhone or iPad</h3>
       <ol>
@@ -1501,16 +1501,18 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     var bar = document.querySelector(".progress").offsetHeight;
     window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - bar - 12, behavior: "smooth" });
   }
-  document.getElementById("menuHome").addEventListener("click", function () {
-    var d = document.getElementById("homeHelp");
-    d.open = true;
-    goTo(d);
-  });
-  function openGuide() {
-    var d = document.getElementById("guide");
+  // The guide and home screen steps only show when opened from the Menu; folding one away hides it again.
+  function showCard(d) {
+    d.hidden = false;
     d.open = true;
     goTo(d);
   }
+  ["guide", "homeHelp"].forEach(function (id) {
+    var d = document.getElementById(id);
+    d.addEventListener("toggle", function () { if (!d.open) d.hidden = true; });
+  });
+  document.getElementById("menuHome").addEventListener("click", function () { showCard(document.getElementById("homeHelp")); });
+  function openGuide() { showCard(document.getElementById("guide")); }
   document.getElementById("menuGuide").addEventListener("click", openGuide);
   document.getElementById("guideLink").addEventListener("click", openGuide);
   document.getElementById("menuTip").addEventListener("click", function () {
