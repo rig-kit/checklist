@@ -120,11 +120,16 @@ h1 { font-size: 2.1em; line-height: 1.02; font-weight: 700; }
   background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line);
   display: grid; gap: 6px;
 }
-.progress-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.progress-count { font-family: var(--font-display); font-weight: 700; font-size: 1.15em; font-variant-numeric: tabular-nums; }
-.progress-role { color: var(--muted); font-size: .85em; }
+/* Three bars at once: Everything, Outside, Inside. The row for the current filter is bold. */
+.meters { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px 10px; }
+.m-label { font-family: var(--font-display); font-weight: 600; font-size: .95em; color: var(--muted); }
+.m-num { font-family: var(--font-display); font-weight: 600; font-size: .95em; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.meters .on { color: var(--ink); font-weight: 700; }
 .bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
 .bar > span { display: block; height: 100%; width: 0; background: var(--done); border-radius: 5px; transition: width .25s ease; }
+.bar.outside > span { background: var(--out-ink); }
+.bar.inside > span { background: var(--in-ink); }
+.bar.full > span { background: var(--done); }
 
 /* Controls */
 .panel { display: grid; gap: 10px; padding-block: 18px 6px; }
@@ -344,11 +349,11 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   </header>
 
   <div class="progress" aria-live="polite">
-    <div class="progress-row">
-      <span class="progress-count" id="count">0 of 0 done</span>
-      <span class="progress-role" id="roleLabel"></span>
+    <div class="meters" id="meters">
+      <span class="m-label" id="ml-all">Everything</span><div class="bar"><span id="bar-all"></span></div><span class="m-num" id="mn-all"></span>
+      <span class="m-label" id="ml-outside">Outside</span><div class="bar outside" id="b-outside"><span id="bar-outside"></span></div><span class="m-num" id="mn-outside"></span>
+      <span class="m-label" id="ml-inside">Inside</span><div class="bar inside" id="b-inside"><span id="bar-inside"></span></div><span class="m-num" id="mn-inside"></span>
     </div>
-    <div class="bar"><span id="bar"></span></div>
     <div class="sync-line" id="syncLine" hidden><span class="dot" aria-hidden="true"></span><span id="syncText"></span></div>
   </div>
 
@@ -699,7 +704,6 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     ]}
   ];
   var WHO_LABEL = { outside: "Outside", inside: "Inside", both: "Both" };
-  var ROLE_LABEL = { outside: "Outside only", inside: "Inside only", all: "" };
   var SIZES = ["Normal", "Large", "Extra large"];
   var KEY = "traveldaychecklist.v1";
 
@@ -906,10 +910,15 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
   function updateCounts() {
     var total = 0, done = 0;
+    // Outside and Inside each count what that filter shows, so "Both" sections count toward each.
+    var by = { all: [0, 0], outside: [0, 0], inside: [0, 0] };
     SECTIONS.forEach(function (sec) {
-      if (!sectionVisible(sec)) return;
       var items = itemsFor(sec).filter(function (it) { return !state.hidden[it.id]; });
       var d = items.filter(function (it) { return state.checked[it.id]; }).length;
+      ["all", "outside", "inside"].forEach(function (r) {
+        if (r === "all" || sec.who === "both" || sec.who === r) { by[r][0] += d; by[r][1] += items.length; }
+      });
+      if (!sectionVisible(sec)) return;
       total += items.length; done += d;
       var box = sectionsEl.querySelector('[data-sec="' + sec.id + '"]');
       if (box) {
@@ -917,9 +926,16 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         box.classList.toggle("complete", items.length > 0 && d === items.length && !editing);
       }
     });
-    document.getElementById("count").textContent = done + " of " + total + " done";
-    document.getElementById("roleLabel").textContent = ROLE_LABEL[state.role];
-    document.getElementById("bar").style.width = (total ? (done / total) * 100 : 0) + "%";
+    Object.keys(by).forEach(function (r) {
+      var d = by[r][0], t = by[r][1], on = state.role === r;
+      document.getElementById("bar-" + r).style.width = (t ? (d / t) * 100 : 0) + "%";
+      if (r !== "all") document.getElementById("b-" + r).classList.toggle("full", t > 0 && d === t);
+      var num = document.getElementById("mn-" + r);
+      num.textContent = d + " / " + t;
+      num.setAttribute("aria-label", d + " of " + t + " done");
+      num.classList.toggle("on", on);
+      document.getElementById("ml-" + r).classList.toggle("on", on);
+    });
     document.getElementById("allDone").hidden = editing || !(total > 0 && done === total);
     renderTrip();
   }
