@@ -488,7 +488,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         <div class="g-item">
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 4v16"/></svg></span>
           <div>
-            <h3>Split the jobs</h3>
+            <h3>Filter the list</h3>
             <p>Under <b class="ui">Filter</b> pick <b class="ui">Outside</b> or <b class="ui">Inside</b> to see only your half. <b class="ui">Everything</b> shows the whole list.</p>
           </div>
         </div>
@@ -502,7 +502,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         <div class="g-item">
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2"/></svg></span>
           <div>
-            <h3>Make it fit your trailer</h3>
+            <h3>Customize your own list</h3>
             <ol>
               <li>Tap <b class="ui">Customize list</b>.</li>
               <li>Tap <b class="ui">Hide</b> on anything your trailer doesn't have.</li>
@@ -530,6 +530,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
           <div>
             <h3>Start a new travel day</h3>
             <p>Open the <b class="ui">Menu</b> and tap <b class="ui">Start a new travel day</b>. It unchecks everything and keeps your own items. Once everything is checked, a <b class="ui">Start next travel day</b> button also shows at the bottom.</p>
+            <p id="guideResetShare" hidden>If you share with your partner, the list stays shared, so their phone starts the new travel day too. No need to share again.</p>
           </div>
         </div>
         <div class="g-item">
@@ -542,7 +543,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         <div class="g-item">
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7"/><path d="M8.5 11h7"/><path d="M10.5 18.5h3"/></svg></span>
           <div>
-            <h3>Use it like an app</h3>
+            <h3>Add this app to your home screen</h3>
             <p>Put it on your home screen: open the <b class="ui">Menu</b> and tap <b class="ui">Put this on your home screen</b>. It works with no signal, and the screen stays on while you check items off.</p>
           </div>
         </div>
@@ -574,7 +575,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
     <section class="tipjar pink" aria-labelledby="tipTitle">
       <h2 id="tipTitle">Did this help? Buy me a coffee!</h2>
-      <p>This checklist is free. If it helped you arrive safely, you can buy me a coffee!<br><br>Apple Pay, Google Pay, and cards all work.</p>
+      <p>This checklist is free. If it helped you arrive safely, you can buy me a coffee! Apple Pay, Google Pay, and cards all work.</p>
       <div class="btn-row">
         <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Buy me a coffee</a>
         <a class="btn" id="venmoLink" href="#" target="_blank" rel="noopener" hidden>Send me a Venmo</a>
@@ -1317,6 +1318,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     document.getElementById("menuShare").hidden = !on;
     document.getElementById("guideShare").hidden = !on;
     document.getElementById("guidePrivacyShare").hidden = !on;
+    document.getElementById("guideResetShare").hidden = !on;
     var line = document.getElementById("syncLine");
     line.hidden = !on || !state.sync;
     if (!on) return;
