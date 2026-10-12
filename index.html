@@ -104,8 +104,8 @@ h1 { font-size: 2em; line-height: 1.08; font-weight: 700; letter-spacing: -.01em
 .flamingo.flap .wing { animation: flap .18s ease-in-out 5; opacity: 1; }
 @keyframes flap { 50% { transform: rotate(70deg) scale(1.45); } }
 @keyframes hop { 30%, 60% { transform: translateY(-8px); } }
-.road { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; overflow: hidden; border-radius: 0 0 20px 20px; pointer-events: none; z-index: 2; }
-.road-trip { position: absolute; bottom: 4px; left: -240px; width: 225px; height: auto; animation: drive 3s linear forwards; }
+.road { position: absolute; left: 0; right: 0; bottom: 0; height: 88px; overflow: hidden; border-radius: 0 0 20px 20px; pointer-events: none; z-index: 2; }
+.road-trip { position: absolute; bottom: 2px; left: -250px; width: 235px; height: auto; animation: drive 3s linear forwards; }
 @keyframes drive { to { left: 100%; } }
 .mast-text { padding-right: 4px; }
 .mast-top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
@@ -1548,52 +1548,72 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   var TRUCK_COLORS = ["#d9407f", "#2b7bd6", "#d6372a", "#2f9e58", "#f2b01e", "#7a4fd1", "#f07a1a", "#26323b", "#0b6577", "#8fd3e8"];
   var lastTruck = -1;
   function roadTrip(color) {
-    // Hand-inked cartoon style: dark ink outlines, polished silver shell with dark rounded windows, chunky tires.
-    var INK = 'stroke="#1f2326" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"';
+    // Sketchbook style: thin, slightly doubled ink lines, flat soft fills, a tall rounded silver shell with big dark windows.
+    var LINE = 'stroke="#232527" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"';
+    var SKETCH = 'fill="none" stroke="#232527" stroke-width=".7" opacity=".5" transform="translate(.8 .5)"';
     function wheel(cx, cy) {
-      return '<circle cx="' + cx + '" cy="' + cy + '" r="9.5" fill="#2a2e31" ' + INK + '/>' +
-        '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#f4f6f7" stroke="#1f2326" stroke-width="1.4"/>' +
-        '<g fill="#1f2326"><circle cx="' + cx + '" cy="' + (cy - 2.6) + '" r=".9"/><circle cx="' + (cx + 2.5) + '" cy="' + (cy - .8) + '" r=".9"/><circle cx="' + (cx + 1.5) + '" cy="' + (cy + 2.2) + '" r=".9"/><circle cx="' + (cx - 1.5) + '" cy="' + (cy + 2.2) + '" r=".9"/><circle cx="' + (cx - 2.5) + '" cy="' + (cy - .8) + '" r=".9"/></g>';
+      var holes = "";
+      for (var k = 0; k < 6; k++) {
+        var a = k * Math.PI / 3;
+        holes += '<circle cx="' + (cx + 3.2 * Math.cos(a)).toFixed(1) + '" cy="' + (cy + 3.2 * Math.sin(a)).toFixed(1) + '" r=".8"/>';
+      }
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="9.4" fill="#1d1f21" ' + LINE + '/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="5.4" fill="#d3d6d8" stroke="#232527" stroke-width="1"/>' +
+        '<g fill="#232527">' + holes + '<circle cx="' + cx + '" cy="' + cy + '" r="1"/></g>';
     }
-    var shell = "M20 62C7 62 4 50 6 39 9 23 22 15 48 15h112c24 0 36 9 38 25 1 12-2 22-12 22z";
-    return '<svg class="road-trip" viewBox="0 0 330 84" aria-hidden="true">' +
-      '<defs><linearGradient id="alu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfcfc"/><stop offset=".5" stop-color="#e2e6e9"/><stop offset="1" stop-color="#b7bfc6"/></linearGradient>' +
-      '<linearGradient id="ends" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5d6870" stop-opacity=".45"/><stop offset=".12" stop-color="#5d6870" stop-opacity="0"/><stop offset=".85" stop-color="#5d6870" stop-opacity="0"/><stop offset="1" stop-color="#5d6870" stop-opacity=".45"/></linearGradient>' +
-      '<clipPath id="shell"><path d="' + shell + '"/></clipPath></defs>' +
-      '<ellipse cx="168" cy="76" rx="160" ry="5" fill="rgba(0,0,0,.2)"/>' +
-      // Airstream
-      '<path d="M196 58h22" stroke="#1f2326" stroke-width="3.5" stroke-linecap="round"/>' +
-      '<rect x="78" y="9" width="28" height="8" rx="4" fill="#f7f8f9" ' + INK + '/>' +
-      '<path d="' + shell + '" fill="url(#alu)" ' + INK + '/>' +
-      '<g clip-path="url(#shell)"><rect x="0" y="47" width="200" height="16" fill="#cfd5da"/><path d="M0 47h200" stroke="#1f2326" stroke-width="1.2"/><rect x="4" y="10" width="196" height="56" fill="url(#ends)"/>' +
-      '<path d="M14 24c20-6 60-7 120-6" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>' +
-      '<path d="M60 52h40M120 54h50M24 56h20" stroke="#aeb6bd" stroke-width="1.6" stroke-linecap="round"/></g>' +
-      '<path d="' + shell + '" fill="none" ' + INK + '/>' +
-      // door with its own little window
-      '<rect x="32" y="22" width="21" height="39" rx="4" fill="none" ' + INK + '/>' +
-      '<rect x="36.5" y="26.5" width="12" height="10" rx="3" fill="#2b3035" stroke="#1f2326" stroke-width="1.6"/>' +
-      '<path d="M48 44h2" stroke="#1f2326" stroke-width="2" stroke-linecap="round"/>' +
+    var shell = "M14 70C6 70 4 64 4 56V34C4 16 14 8 34 8h110c18 0 26 10 27 26v24c0 8-3 12-11 12z";
+    var truck = "M198 50h34V30q0-6 6-6h18q4 0 7 4l9 14h22q8 0 8 8v16q0 4-4 4H198z";
+    return '<svg class="road-trip" viewBox="0 0 312 92" aria-hidden="true">' +
+      '<defs><clipPath id="shell"><path d="' + shell + '"/></clipPath></defs>' +
+      '<rect x="2" y="77" width="306" height="10" rx="5" fill="rgba(0,0,0,.16)"/>' +
+      // tongue, propane box and jack stand
+      '<path d="M168 66h30" stroke="#232527" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<rect x="173" y="53" width="10" height="13" rx="1.5" fill="#efeeec" ' + LINE + '/>' +
+      '<path d="M188 66v11M185 77h6" ' + LINE + ' fill="none"/>' +
+      // roof air conditioner
+      '<path d="M72 9q0-6 8-6h20q8 0 8 6z" fill="#fbfbfa" ' + LINE + '/>' +
+      // shell: flat warm silver, white highlight on the top curves, soft shade at the ends
+      '<path d="' + shell + '" fill="#e5e3e0"/>' +
+      '<g clip-path="url(#shell)">' +
+      '<rect x="0" y="47" width="180" height="26" fill="#d9d7d3"/>' +
+      '<path d="M0 30h12M161 30h14" stroke="#bdbbb7" stroke-width="10"/>' +
+      '<path d="M10 40C9 22 17 13 34 12M150 12c12 1 17 7 18 18" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M0 46.5h180" stroke="#232527" stroke-width=".8"/>' +
+      '<path d="M60 8v62M118 8v62" stroke="#232527" stroke-width=".6" opacity=".35"/>' +
+      '</g>' +
+      '<path d="' + shell + '" fill="none" ' + LINE + '/>' +
+      '<path d="' + shell + '" ' + SKETCH + '/>' +
+      '<path d="M30 7.4h-6M146 7.6l7 .6M3.6 52v6" stroke="#232527" stroke-width=".8" stroke-linecap="round"/>' +
+      // door, its window, amber light and steps
+      '<rect x="23" y="16" width="21" height="53" rx="3" fill="none" ' + LINE + '/>' +
+      '<rect x="27" y="21" width="13" height="14" rx="3" fill="#202224" ' + LINE + '/>' +
+      '<path d="M39 44h2" stroke="#232527" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<rect x="31" y="11.5" width="5" height="2.6" rx="1" fill="#f2c26b" stroke="#232527" stroke-width=".7"/>' +
+      '<rect x="26" y="71" width="15" height="6" rx="1" fill="#cfd2d4" ' + LINE + '/><path d="M26.5 74h14" stroke="#232527" stroke-width=".7"/>' +
       // windows
-      '<g fill="#2b3035" ' + INK + '><rect x="62" y="23" width="25" height="17" rx="5"/><rect x="93" y="23" width="25" height="17" rx="5"/><rect x="138" y="24" width="16" height="14" rx="4"/><path d="M172 24h8c8 0 13 6 14 16h-22q-4 0-4-4v-8q0-4 4-4z"/></g>' +
-      '<g stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity=".7"><path d="M66 27l5-2M97 27l5-2M142 28l3-1.5M172 28l5-2"/></g>' +
+      '<g fill="#202224" ' + LINE + '><rect x="53" y="22" width="27" height="22" rx="4.5"/><rect x="86" y="22" width="27" height="22" rx="4.5"/>' +
+      '<rect x="127" y="22" width="17" height="17" rx="4"/><rect x="127" y="41.5" width="17" height="4" rx="2"/>' +
+      '<path d="M153 22h7c6 0 9 6 9 14v8h-16q-2.5 0-2.5-2.5v-17q0-2.5 2.5-2.5z"/></g>' +
+      '<g fill="#3a3d40"><circle cx="60" cy="30" r=".6"/><circle cx="71" cy="37" r=".5"/><circle cx="96" cy="28" r=".6"/><circle cx="104" cy="39" r=".5"/><circle cx="133" cy="30" r=".5"/><circle cx="160" cy="33" r=".6"/></g>' +
       // marker lights
-      '<circle cx="12" cy="32" r="1.8" fill="#e0402f" stroke="#1f2326" stroke-width=".8"/><circle cx="193" cy="33" r="1.8" fill="#e0402f" stroke="#1f2326" stroke-width=".8"/><circle cx="64" cy="19" r="1.6" fill="#f2b01e" stroke="#1f2326" stroke-width=".8"/>' +
-      '<path d="M8 63h188" stroke="#1f2326" stroke-width="3" stroke-linecap="round"/>' +
-      '<rect x="36" y="64" width="13" height="4" rx="1" fill="#9aa3aa" stroke="#1f2326" stroke-width="1.2"/>' +
-      '<path d="M88 63a19 12 0 0 1 40 0z" fill="#3a4045" stroke="#1f2326" stroke-width="1.6"/>' +
-      wheel(98, 66) + wheel(119, 66) +
-      // pickup truck in this trip's color
-      '<path d="M212 41h40V25q0-6 6-6h19q5 0 8 4l10 14h18q8 0 8 8v14q0 5-5 5H212z" fill="' + color + '" ' + INK + '/>' +
-      '<path d="M258 24h17l9 13h-26z" fill="#2b3035" stroke="#1f2326" stroke-width="1.6" stroke-linejoin="round"/>' +
-      '<path d="M262 28l4-2" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' +
-      '<path d="M254 41v20M216 46h32" stroke="#1f2326" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>' +
-      '<path d="M218 44h30" stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-linecap="round"/>' +
-      '<path d="M270 45h5" stroke="#1f2326" stroke-width="2" stroke-linecap="round"/>' +
-      '<circle cx="316" cy="44" r="2.6" fill="#ffd25e" stroke="#1f2326" stroke-width="1"/>' +
-      '<rect x="212" y="43" width="3" height="6" rx="1" fill="#e0402f"/>' +
-      '<rect x="312" y="57" width="13" height="5" rx="2.5" fill="#c9cfd4" ' + INK + '/>' +
-      '<path d="M220 66a13 12 0 0 1 26 0zM284 66a13 12 0 0 1 26 0z" fill="#2a2e31" stroke="#1f2326" stroke-width="1.4"/>' +
-      wheel(233, 66) + wheel(297, 66) +
+      '<g fill="#d8433a" stroke="#232527" stroke-width=".5"><ellipse cx="9" cy="27" rx="1.6" ry="1"/><ellipse cx="167" cy="29" rx="1.6" ry="1"/><ellipse cx="8" cy="49" rx="1.4" ry=".9"/><ellipse cx="163" cy="63" rx="1.6" ry="1"/></g>' +
+      // chassis and tandem wheels
+      '<path d="M6 70.5h162" stroke="#1d1f21" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M60 71a22 12 0 0 1 46 0z" fill="#1d1f21"/>' +
+      wheel(73, 74) + wheel(93, 74) +
+      // pickup truck in this trip's color, same sketchy ink
+      '<path d="' + truck + '" fill="' + color + '" ' + LINE + '/>' +
+      '<path d="' + truck + '" ' + SKETCH + '/>' +
+      '<path d="M238 29h17l8 12h-25z" fill="#202224" ' + LINE + '/>' +
+      '<path d="M240 33l4-2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>' +
+      '<path d="M234 50v18M202 55h28" stroke="#232527" stroke-width=".9" stroke-linecap="round" opacity=".6"/>' +
+      '<path d="M202 53h28" stroke="rgba(255,255,255,.5)" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M248 52h4" stroke="#232527" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<circle cx="297" cy="50" r="2.2" fill="#ffe08a" stroke="#232527" stroke-width=".8"/>' +
+      '<rect x="198" y="52" width="2.5" height="5" rx="1" fill="#d8433a"/>' +
+      '<rect x="294" y="66" width="12" height="4.5" rx="2" fill="#d3d6d8" ' + LINE + '/>' +
+      '<path d="M202 71a13 12 0 0 1 26 0zM270 71a13 12 0 0 1 26 0z" fill="#1d1f21"/>' +
+      wheel(215, 74) + wheel(283, 74) +
       '</svg>';
   }
   var flamingo = document.querySelector(".flamingo");
