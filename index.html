@@ -650,7 +650,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       ["e7", "Entry steps fully retracted and locked"],
       ["h13", "Exterior compartments and hatches closed and locked"]
     ]},
-    { id: "tires", name: "Tires, Wheels & Chassis", who: "outside", items: [
+    { id: "tires", name: "Wheels & Tires", who: "outside", items: [
       ["t1", "Tire pressure checked cold on trailer and tow vehicle"],
       ["t2", "Visual tire check"],
       ["t3", "Lug nuts torqued to spec in a star pattern", 0, "On 6-lug wheels: 1, 4, 2, 5, 3, 6."],
@@ -683,8 +683,8 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       ["c1", "Counter cleared and appliances unplugged and stowed"],
       ["c2", "Stove burners off and cover down"],
       ["c3", "Sink empty and dishes secured"],
-      ["c4", "Microwave glass tray removed or padded", 1],
-      ["c5", "Fridge set for travel, following your fridge's manual", 0, "Many fridges have a night or eco mode. It's fine when the fridge is already cold or it's cool out. Use normal mode in hot weather or with perishable food."],
+      ["c4", "Microwave glass tray removed or padded"],
+      ["c5", "Fridge set for travel, following your fridge's manual"],
       ["c6", "Fridge and freezer doors latched"],
       ["c7", "Pantry, cabinets and drawers latched"],
       ["c8", "Kitchen windows closed and latched"]
@@ -697,7 +697,8 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       ["b5", "Toilet lid down"],
       ["b6", "Cabinets and drawers closed"],
       ["b7", "Bathroom window closed and latched"],
-      ["b8", "Bathroom roof vent and fan closed", 0, "The bathroom vent is one of the most often forgotten."]
+      ["b8", "Bathroom roof vent and fan closed"],
+      ["b9", "Shower roof vent closed"]
     ]},
     { id: "living", name: "Living Area & Dinette", who: "inside", items: [
       ["l1", "Dinette, tables and shelves cleared"],
@@ -712,12 +713,13 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     ]},
     { id: "bedroom", name: "Bedroom", who: "inside", items: [
       ["r1", "Nightstands, shelves and bed cleared of loose items"],
+      ["r7", "Nightstand USB switches turned off"],
       ["r2", "Bedroom TV and mount locked and secured", 1],
-      ["r3", "Wardrobe and closet doors latched", 0, "Closet doors often swing open on bumpy roads."],
+      ["r3", "Wardrobe and closet doors latched"],
       ["r4", "Overhead lockers and drawers latched"],
       ["l4", "Under-bed storage latched"],
       ["s1", "Bedroom windows closed and latched"],
-      ["r5", "Bedroom skylight closed"],
+      ["r5", "Bedroom area skylight closed"],
       ["r6", "Bedroom blinds and shades set for travel"]
     ]},
     { id: "systems", name: "Systems & Power", who: "inside", items: [
@@ -725,7 +727,9 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       ["s6", "Water pump off"],
       ["s7", "Water heater off"],
       ["s8", "Inverter off", 1],
-      ["s9", "Lights, radio and USB switches off"],
+      ["s9", "Lights turned off"],
+      ["s11", "Radio unit turned off"],
+      ["s12", "USB switches turned off"],
       ["s10", "Battery switch left ON", 0, "Keeps 12V systems like the fridge running."]
     ]},
     { id: "final", name: "Final Check", who: "both", items: [
