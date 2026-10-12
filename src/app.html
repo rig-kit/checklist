@@ -584,32 +584,33 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
   var SECTIONS = [
     { id: "hookups", name: "Hookups & Utilities", who: "outside", items: [
-      ["h1", "Black tank dumped, then gray tank", 0, "Black first, so the gray water rinses the hose."],
+      ["h1", "Black tank dumped"],
+      ["h14", "Gray tank dumped"],
       ["h2", "Sewer hose rinsed, capped and stowed"],
       ["h3", "Water hoses and filter disconnected, drained and stowed"],
-      ["h4", "Hose splitter and pressure regulator taken off the spigot", 0, "Small and easy to leave behind."],
-      ["h5", "City water fill cap closed"],
+      ["h4", "Hose splitter and pressure regulator taken off the spigot"],
+      ["h5", "City water and black tank flush caps closed"],
       ["h6", "Power cord unplugged and stowed"],
-      ["h7", "Surge protector or EMS removed from the post"],
+      ["h7", "Surge protector removed from the post"],
       ["h8", "Cable or satellite cord disconnected", 1],
       ["h9", "Starlink dish taken down and stowed", 1],
       ["h10", "Propane tanks turned off", 0, "If you tow with propane on, hide this item."],
       ["h11", "Propane cover latched"],
-      ["h12", "Water heater door latched"],
-      ["h13", "Exterior compartments and hatches closed and locked"]
+      ["h12", "Water heater door latched"]
     ]},
     { id: "exterior", name: "Exterior Stow", who: "outside", items: [
       ["e1", "Main awning retracted and locked"],
       ["e2", "Window awnings secured", 1],
       ["e3", "Outdoor gear packed: chairs, grill, rug, table"],
-      ["e4", "Exterior shower stowed and door closed", 1],
-      ["e5", "Roof clear: antenna down, solar panels flat", 1],
+      ["e4", "Exterior shower stowed, door closed and locked", 1],
+      ["e5", "Roof clear of any loose objects"],
       ["e6", "Leveling blocks and pads picked up"],
-      ["e7", "Entry steps retracted"]
+      ["e7", "Entry steps fully retracted and locked"],
+      ["h13", "Exterior compartments and hatches closed and locked"]
     ]},
     { id: "tires", name: "Tires, Wheels & Chassis", who: "outside", items: [
       ["t1", "Tire pressure checked cold on trailer and tow vehicle"],
-      ["t2", "Tires look good: no bulges, cuts or low tread"],
+      ["t2", "Visual tire check"],
       ["t3", "Lug nuts torqued to spec in a star pattern", 0, "On 6-lug wheels: 1, 4, 2, 5, 3, 6."],
       ["t4", "Tire pressure monitor on and reading every tire", 1],
       ["t5", "Stabilizer jacks fully raised"],
@@ -619,7 +620,6 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     { id: "hitch", name: "Hitch & Tow Setup", who: "outside", items: [
       ["k1", "Hitch pin and clip in place in the receiver"],
       ["k2", "Coupler latched on the ball and locked"],
-      ["k3", "Lift test: raise the tongue jack slightly to confirm the coupler holds"],
       ["k4", "Weight distribution and/or sway control connected and tensioned", 1],
       ["k5", "Safety chains crossed and connected"],
       ["k6", "Breakaway cable clipped to the tow vehicle, not the chains"],
@@ -631,9 +631,9 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     ]},
     { id: "vehicle", name: "Tow Vehicle", who: "outside", items: [
       ["v1", "Towing mirrors extended and adjusted"],
-      ["v2", "Tow/haul mode on"],
+      ["v2", "Tow mode turned on"],
       ["v3", "Backup or trailer camera on", 1],
-      ["v4", "Route checked for low clearances and propane restrictions", 0, "Some tunnels don't allow propane."],
+      ["v4", "Route checked for low clearances and propane restrictions"],
       ["v5", "Fuel or charge level checked"],
       ["v6", "Passengers and pets buckled in"]
     ]},
@@ -641,7 +641,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       ["c1", "Counter cleared and appliances unplugged and stowed"],
       ["c2", "Stove burners off and cover down"],
       ["c3", "Sink empty and dishes secured"],
-      ["c4", "Microwave glass tray removed or padded", 1, "Trays often break in transit."],
+      ["c4", "Microwave glass tray removed or padded", 1],
       ["c5", "Fridge set for travel, following your fridge's manual", 0, "Many fridges have a night or eco mode. It's fine when the fridge is already cold or it's cool out. Use normal mode in hot weather or with perishable food."],
       ["c6", "Fridge and freezer doors latched"],
       ["c7", "Pantry, cabinets and drawers latched"],
@@ -660,9 +660,9 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     { id: "living", name: "Living Area & Dinette", who: "inside", items: [
       ["l1", "Dinette, tables and shelves cleared"],
       ["l7", "Table secured or lowered", 1],
-      ["l2", "TV locked to its mount or stowed", 1],
+      ["l2", "TV and mount locked and secured", 1],
       ["l3", "Overhead lockers, cabinets and drawers latched"],
-      ["l5", "Loose decor and wall items stowed"],
+      ["l5", "Loose decor and wall items stowed", 1],
       ["l6", "Loose chairs or stools secured"],
       ["l8", "Living area windows closed and latched"],
       ["l9", "Living area roof vent, fan and skylight closed"],
@@ -670,12 +670,12 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     ]},
     { id: "bedroom", name: "Bedroom", who: "inside", items: [
       ["r1", "Nightstands, shelves and bed cleared of loose items"],
-      ["r2", "Bedroom TV locked to its mount or stowed", 1],
+      ["r2", "Bedroom TV and mount locked and secured", 1],
       ["r3", "Wardrobe and closet doors latched", 0, "Closet doors often swing open on bumpy roads."],
       ["r4", "Overhead lockers and drawers latched"],
       ["l4", "Under-bed storage latched"],
       ["s1", "Bedroom windows closed and latched"],
-      ["r5", "Bedroom roof vent, fan and skylight closed"],
+      ["r5", "Bedroom skylight closed"],
       ["r6", "Bedroom blinds and shades set for travel"]
     ]},
     { id: "systems", name: "Systems & Power", who: "inside", items: [
