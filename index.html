@@ -16,7 +16,7 @@
 <title>Travel Day Checklist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Yellowtail&display=swap">
 <style>
 /* Layout: one narrow column like a clipboard; retro-teal riveted header band with a lawn flamingo, sticky progress strip, big tappable rows color-coded Outside (teal) / Inside (flamingo) / Both (sunshine) */
 :root {
@@ -126,6 +126,23 @@ h1 { font-size: 2em; line-height: 1.08; font-weight: 700; letter-spacing: -.01em
   background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line);
   display: grid; gap: 6px;
 }
+/* Small Airstream-style nameplate that rides along with the pinned progress bars */
+.nameplate {
+  justify-self: center; position: relative; display: inline-flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 26px 0 24px; border-radius: 99px; margin-bottom: 4px;
+  background: linear-gradient(180deg, #fdfdfc 0%, #f1f2f1 55%, #e2e5e7 100%);
+  border: 3px solid #b3bcc3;
+  box-shadow: 0 0 0 1px #8f9aa3, inset 0 1px 0 #ffffff, inset 0 -1px 2px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.18);
+}
+.nameplate::before, .nameplate::after {
+  content: ""; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #8f9aa3 70%); box-shadow: 0 0 0 .5px #6f7a83;
+}
+.nameplate::before { left: 8px; }
+.nameplate::after { right: 8px; }
+.np-text { font-family: "Yellowtail", "Brush Script MT", cursive; font-size: 22px; line-height: 1; color: #5a6873; text-shadow: 0 1px 0 #ffffff; white-space: nowrap; padding-top: 2px; }
+.np-flamingo { width: 15px; height: 22px; flex: none; margin-bottom: 1px; }
+:root[data-theme="dark"] .nameplate { background: linear-gradient(180deg, #e9ecee 0%, #d6dadd 60%, #c3c9ce 100%); border-color: #8f9aa3; box-shadow: 0 0 0 1px #5d6870, inset 0 1px 0 #f4f6f7, 0 2px 4px rgba(0,0,0,.5); }
 /* Three bars at once: Everything, Outside, Inside. The row for the current filter is bold. */
 .meters { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px 10px; }
 .m-label { font-family: var(--font-display); font-weight: 600; font-size: .95em; color: var(--muted); }
@@ -358,6 +375,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   </header>
 
   <div class="progress" aria-live="polite">
+    <div class="nameplate" aria-hidden="true"><span class="np-text">Travel Day Checklist</span><svg class="np-flamingo" viewBox="0 0 100 150" focusable="false"><path d="M58 58 C70 42 56 32 60 19 C63 9 77 7 81 16" fill="none" stroke="#d9407f" stroke-width="7" stroke-linecap="round"/><circle cx="80" cy="17" r="7" fill="#d9407f"/><path d="M85 13 Q97 15 95 28 L89 22 Z" fill="#ffffff" stroke="#5a6873" stroke-width="1.5"/><path d="M93 22 Q96 25 95 28 L91 25 Z" fill="#1d1d1d"/><circle cx="81" cy="15" r="1.6" fill="#1d1d1d"/><path d="M22 64 C24 50 46 46 60 54 C68 59 66 74 54 78 C42 82 26 80 14 72 C18 70 20 68 22 64 Z" fill="#d9407f"/><path d="M30 62 C38 56 52 57 56 64 C48 70 38 70 30 62 Z" fill="#fde6ef" opacity=".55"/><path d="M44 79 L44 140" stroke="#d9407f" stroke-width="4" stroke-linecap="round"/><path d="M44 100 L57 92 L46 87" fill="none" stroke="#d9407f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 141 L51 141" stroke="#d9407f" stroke-width="4" stroke-linecap="round"/></svg></div>
     <div class="meters" id="meters">
       <span class="m-label" id="ml-all">Everything</span><div class="bar"><span id="bar-all"></span></div><span class="m-num" id="mn-all"></span>
       <span class="m-label" id="ml-outside">Outside</span><div class="bar outside" id="b-outside"><span id="bar-outside"></span></div><span class="m-num" id="mn-outside"></span>
@@ -565,7 +583,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
     <section class="tipjar pink" aria-labelledby="tipTitle">
       <h2 id="tipTitle">Did this help? Buy me a coffee!</h2>
-      <p>This checklist is free. If it helped you arrive safely, you can buy me a coffee! Apple Pay, Google Pay, and cards all work.</p>
+      <p>This checklist is free. If it helped you arrive safely, you can buy me a coffee! Apple Pay, Google Pay, and cards accepted, or send me a Venmo.</p>
       <div class="btn-row">
         <a class="btn solid" id="bmcLink" href="#" target="_blank" rel="noopener">Buy me a coffee</a>
         <a class="btn" id="venmoLink" href="#" target="_blank" rel="noopener" hidden>Send me a Venmo</a>
