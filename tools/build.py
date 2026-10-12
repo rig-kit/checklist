@@ -17,8 +17,8 @@ head = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="A free, phone-friendly travel day checklist for Airstream owners. Check off hitching, hookups, inside and outside items, and keep your own custom list.">
-<meta name="theme-color" content="#eceff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111519" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eceff2">
+<script>try{if((JSON.parse(localStorage.getItem("traveldaychecklist.v1")||"{}")||{}).theme==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Travel Day">
@@ -49,7 +49,7 @@ html = head + app[:body_start] + "</head>\n<body>\n" + app[body_start:] + "\n</b
 """)
 
 (site / "sw.js").write_text("""// Keeps the checklist working with no signal: pages load fresh when online, everything falls back to the saved copy offline.
-const CACHE = "travel-day-v8";
+const CACHE = "travel-day-v9";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {

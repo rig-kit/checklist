@@ -33,17 +33,7 @@
   --font-body: "Aptos", "Figtree", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --fs: 16px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #111519; --surface: #1a2027; --ink: #e9eef2; --muted: #a0abb6; --line: #2d3740;
-    --accent: #63b8cb; --accent-ink: #08191e; --accent-soft: #16323a;
-    --done: #74c995; --done-soft: #17331f; --caution: #f0b46a; --caution-soft: #3a2a14; --rivet: #3a444e;
-    --band: #10343c; --band-ink: #e9eef2; --band-muted: #a9d2db;
-    --flamingo: #f27fb3; --flamingo-ink: #2a0f1b; --flamingo-soft: #34192a; --sun: #f2b01e;
-    --out-soft: #14313a; --out-ink: #84cfe0; --in-soft: #34192a; --in-ink: #f6a0c6; --both-soft: #33290f; --both-ink: #f2c76b;
-    color-scheme: dark;
-  }
-}
+/* Light is the default whatever the phone is set to; dark only when chosen in the Menu */
 :root[data-theme="dark"] {
   --bg: #111519; --surface: #1a2027; --ink: #e9eef2; --muted: #a0abb6; --line: #2d3740;
   --accent: #63b8cb; --accent-ink: #08191e; --accent-soft: #16323a;
@@ -961,6 +951,8 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     });
     root.setAttribute("data-size", String(state.size));
     root.setAttribute("data-theme", state.theme);
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute("content", state.theme === "dark" ? "#111519" : "#eceff2");
     document.getElementById("themeText").textContent = state.theme === "dark" ? "Light mode" : "Dark mode";
     document.getElementById("sizeText").textContent = "Text size: " + SIZES[state.size];
     document.getElementById("editBtn").hidden = editing;
