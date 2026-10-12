@@ -190,6 +190,13 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .section.closed .items, .section.closed .add-row { display: none; }
 .section.complete .sec-count { color: var(--done); }
 .section.complete { border-color: var(--done); }
+.sec-check { display: none; width: 1.9em; height: 1.9em; flex: none; }
+.sec-check circle { fill: #2e9e5b; }
+.sec-check path { fill: none; stroke: #ffffff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.section.complete .sec-num { display: none; }
+.section.complete .sec-check { display: block; animation: pop .3s ease-out; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.12); } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .section.complete .sec-check { animation: none; } }
 .section[data-who="outside"] .sec-head { background: var(--out-soft); }
 .section[data-who="inside"] .sec-head { background: var(--in-soft); }
 .section[data-who="both"] .sec-head { background: var(--both-soft); }
@@ -845,6 +852,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       head.appendChild(el("span", "sec-title", sec.name));
       var count = el("span", "sec-count");
       count.appendChild(el("span", "sec-num"));
+      count.insertAdjacentHTML("beforeend", '<svg class="sec-check" viewBox="0 0 24 24" role="img" aria-label="Section done"><circle cx="12" cy="12" r="12"/><path d="M6.8 12.4l3.4 3.4 7-7.4"/></svg>');
       count.appendChild(el("span", "chev"));
       head.appendChild(count);
       var meta = el("span", "sec-meta");
