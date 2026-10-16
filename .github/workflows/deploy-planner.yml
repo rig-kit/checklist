@@ -1,0 +1,60 @@
+name: Deploy trip planner
+
+# Puts the trip planner beta (planner/) live on Cloudflare: sets up the agent on Anthropic, then deploys the Worker.
+# Needs repository secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY
+# and PLANNER_ACCESS_CODE (optional: RESEND_API_KEY for plan emails). Until they all exist, only the tests run.
+on:
+  push:
+    branches: [main, "claude/hosted-trip-planner-*"]
+    paths: ["planner/**", ".github/workflows/deploy-planner.yml"]
+  workflow_dispatch:
+
+concurrency: deploy-planner
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: planner
+    env:
+      READY: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.ANTHROPIC_API_KEY != '' && secrets.GOOGLE_PLACES_API_KEY != '' && secrets.PLANNER_ACCESS_CODE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - name: Say which secrets are missing
+        if: env.READY != 'true'
+        run: |
+          echo "::warning::Not deploying: add the missing repository secrets."
+          [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] || echo "missing CLOUDFLARE_API_TOKEN"
+          [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ] || echo "missing ANTHROPIC_API_KEY"
+          [ -n "${{ secrets.GOOGLE_PLACES_API_KEY }}" ] || echo "missing GOOGLE_PLACES_API_KEY"
+          [ -n "${{ secrets.PLANNER_ACCESS_CODE }}" ] || echo "missing PLANNER_ACCESS_CODE"
+      - name: Set up the agent on Anthropic
+        if: env.READY == 'true'
+        run: npm run setup
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+      - name: Deploy to Cloudflare
+        if: env.READY == 'true'
+        run: |
+          npx wrangler deploy
+          printf '%s' "$ANTHROPIC_API_KEY" | npx wrangler secret put ANTHROPIC_API_KEY
+          printf '%s' "$GOOGLE_PLACES_API_KEY" | npx wrangler secret put GOOGLE_PLACES_API_KEY
+          printf '%s' "$PLANNER_ACCESS_CODE" | npx wrangler secret put ACCESS_CODE
+          if [ -n "$RESEND_API_KEY" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          PLANNER_ACCESS_CODE: ${{ secrets.PLANNER_ACCESS_CODE }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      - name: Check the order page is up
+        if: env.READY == 'true'
+        run: sleep 10 && curl -fsS https://rigkit-planner.rigkit31.workers.dev/ | grep -q "Plan an RV trip"

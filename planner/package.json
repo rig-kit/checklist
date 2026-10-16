@@ -1,0 +1,17 @@
+{
+  "name": "rigkit-planner",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8788",
+    "deploy": "wrangler deploy",
+    "setup": "node setup/setup.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.132.1"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
+  }
+}
