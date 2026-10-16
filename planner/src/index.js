@@ -4,8 +4,8 @@
 // and photos live. Keys stay here and in Anthropic's vault; the browser and the agent never see them.
 import { DurableObject } from "cloudflare:workers";
 import Anthropic from "@anthropic-ai/sdk";
-import { parseOrder } from "./order.js";
-import { orderPage, statusPage, shell, e } from "./pages.js";
+import { chatPage, statusPage, shell, e } from "./pages.js";
+import { turn, display, MAX_TURNS } from "./interview.js";
 import { renderPlan } from "./render.js";
 import { placeDetails, photoUrl, photoRedirect } from "./google.js";
 import IDS from "./setup-ids.js";
@@ -15,6 +15,11 @@ const CHECK_EVERY = 2 * MINUTE;
 const GIVE_UP_AFTER = 4 * 60 * MINUTE;
 const ORDER_ID = /^[A-Za-z0-9]{20}$/;
 const PER_IP_PER_HOUR = 5;
+const CHAT_PER_HOUR = 120;
+
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+}
 
 function newId() {
   const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
@@ -34,24 +39,44 @@ const client = env => new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (url.pathname === "/" && req.method === "GET") return orderPage();
+    if (url.pathname === "/" && req.method === "GET") return chatPage();
     if (url.pathname === "/photo") return photoRedirect(url, env.GOOGLE_PLACES_API_KEY);
 
-    if (url.pathname === "/orders" && req.method === "POST") {
-      if (!IDS || !env.ANTHROPIC_API_KEY) return orderPage(["The planner isn't switched on yet."]);
-      const form = await req.formData();
-      if (!env.ACCESS_CODE || !sameText(String(form.get("code") || "").trim().toUpperCase(), env.ACCESS_CODE.trim().toUpperCase())) {
-        return orderPage(["That access code isn't right."], form);
+    // The interview: /chat/<id> (GET restores it, POST takes the customer's next message), /chat/<id>/start.
+    const c = url.pathname.match(/^\/chat\/([A-Za-z0-9]{20})(\/start)?$/);
+    if (c) {
+      if (!IDS || !env.ANTHROPIC_API_KEY) return json({ error: "The planner isn't switched on yet." }, 503);
+      const code = req.headers.get("X-Access-Code") || "";
+      if (!env.ACCESS_CODE || !sameText(code.trim().toUpperCase(), env.ACCESS_CODE.trim().toUpperCase())) {
+        return json({ error: "code" }, 401);
       }
+      const chat = env.INTERVIEWS.get(env.INTERVIEWS.idFromName(c[1]));
+      if (req.method === "GET" && !c[2]) return json(await chat.view());
+      if (req.method !== "POST") return json({ error: "not found" }, 404);
       const ip = req.headers.get("CF-Connecting-IP") || "local";
       const gate = env.GATE.get(env.GATE.idFromName("gate"));
-      const ok = await gate.take(ip, PER_IP_PER_HOUR, parseInt(env.ORDERS_PER_DAY || "10", 10));
-      if (!ok) return orderPage(["Too many plans have been ordered today. Please try again tomorrow."], form);
-      const { order, email, errors } = parseOrder(form);
-      if (errors) return orderPage(errors, form);
-      const id = newId();
-      await env.ORDERS.get(env.ORDERS.idFromName(id)).start(id, order, email);
-      return Response.redirect(`${url.origin}/p/${id}`, 303);
+      if (c[2]) {
+        if (!(await gate.take(ip, PER_IP_PER_HOUR, parseInt(env.ORDERS_PER_DAY || "10", 10)))) {
+          return json({ error: "Too many plans have been ordered today. Please try again tomorrow." }, 429);
+        }
+        const r = await chat.claim();
+        if (r.error) return json(r, 409);
+        if (!r.plan_id) {
+          const id = newId();
+          await env.ORDERS.get(env.ORDERS.idFromName(id)).start(id, r.order, null);
+          await chat.started(id);
+          r.plan_id = id;
+        }
+        return json({ plan_url: `/p/${r.plan_id}`, profile: r.profile });
+      }
+      if (!(await gate.chat(ip, CHAT_PER_HOUR, parseInt(env.CHAT_TURNS_PER_DAY || "600", 10)))) {
+        return json({ error: "The planner is busy. Please try again in a little while." }, 429);
+      }
+      let body;
+      try { body = await req.json(); } catch { return json({ error: "bad request" }, 400); }
+      const text = String(body.text || "").trim().slice(0, 2000);
+      if (!text) return json({ error: "empty" }, 400);
+      return json(await chat.say(text, body.profile || null), 200);
     }
 
     const m = url.pathname.match(/^\/p\/([^/]+)$/);
@@ -185,20 +210,74 @@ export class Order extends DurableObject {
   }
 }
 
+// One interview: the conversation (kept here, not in the browser, so nobody can hand the planner a made-up
+// order) and, once the customer has confirmed it, the order it produced.
+export class Interview extends DurableObject {
+  async load() {
+    return (await this.ctx.storage.get("i")) || { messages: [], order: null, plan_id: null, created: Date.now() };
+  }
+
+  async view() {
+    const i = await this.load();
+    return { messages: display(i.messages), ready: !!i.order, plan_id: i.plan_id };
+  }
+
+  async say(text, profile) {
+    const i = await this.load();
+    if (i.plan_id) return { error: "This trip has already started.", plan_id: i.plan_id };
+    if (i.messages.filter(m => m.role === "user").length >= MAX_TURNS) {
+      return { error: "This conversation has gotten long. Tap Start over to begin a fresh one." };
+    }
+    if (profile && !i.messages.length) i.profile = profile;
+    try {
+      const r = await turn(client(this.env), i.messages, text, new Date().toISOString().slice(0, 10), i.profile);
+      i.messages = r.messages;
+      i.order = r.order ? r.order.order : null;
+      i.saved_profile = r.order ? r.order.profile : i.saved_profile;
+      await this.ctx.storage.put("i", i);
+      if (!r.ui) return { error: "Sorry, I lost my train of thought. Could you say that again?" };
+      return { reply: { role: "assistant", ...r.ui, ready: !!i.order } };
+    } catch (err) {
+      return { error: "Sorry, something went wrong on my end. Please send that again." };
+    }
+  }
+
+  async claim() {
+    const i = await this.load();
+    if (i.plan_id) return { plan_id: i.plan_id, profile: i.saved_profile };
+    if (!i.order) return { error: "The trip isn't ready to start yet." };
+    if (i.starting && Date.now() - i.starting < 60000) return { error: "Starting already." };
+    i.starting = Date.now();
+    await this.ctx.storage.put("i", i);
+    return { order: i.order, profile: i.saved_profile };
+  }
+
+  async started(planId) {
+    const i = await this.load();
+    i.plan_id = planId;
+    await this.ctx.storage.put("i", i);
+  }
+}
+
 // Limits how many plans can be ordered: per IP per hour (in memory) and for everyone per day (stored).
 export class Gate extends DurableObject {
   hits = {};
 
-  async take(ip, perHour, perDay) {
+  async take(ip, perHour, perDay, kind = "day") {
     const cutoff = Date.now() - 60 * MINUTE;
     const mine = (this.hits[ip] || []).filter(t => t > cutoff);
     if (mine.length >= perHour) return false;
     const day = new Date().toISOString().slice(0, 10);
-    const count = (await this.ctx.storage.get(`day:${day}`)) || 0;
+    const count = (await this.ctx.storage.get(`${kind}:${day}`)) || 0;
     if (count >= perDay) return false;
-    await this.ctx.storage.put(`day:${day}`, count + 1);
+    await this.ctx.storage.put(`${kind}:${day}`, count + 1);
     mine.push(Date.now());
     this.hits[ip] = mine;
     return true;
+  }
+
+  // Interview turns: per IP per hour, and for everyone per day.
+  async chat(ip, perHour, perDay) {
+    return this.take(`chat:${ip}`, perHour, perDay, "chat");
   }
 }

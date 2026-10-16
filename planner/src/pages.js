@@ -1,5 +1,5 @@
-// HTML for the order form and the "your plan is being built" page. The plan page itself is in render.js.
-import { MAX_STOPS, DRIVE_CHOICES, TRAITS } from "./order.js";
+// HTML for the order interview and the "your plan is being built" page. The plan page itself is in render.js.
+import { TRAITS as TRAITS_UI } from "./interview.js";
 
 export const e = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -39,126 +39,219 @@ export function shell(title, body, extraCss = "", head = "") {
 <body>${body}</body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
 }
 
-const FORM_CSS = `
-form { display:grid; gap:20px; }
-fieldset { border:1px solid var(--line); border-radius:12px; background:var(--paper); padding:16px; margin:0; display:grid; gap:12px; min-width:0; }
-legend { font-weight:800; padding:0 6px; }
-label { display:grid; gap:4px; font-size:14px; font-weight:600; }
-label small, .hint { font-weight:400; color:var(--muted); font-size:13px; }
-input, select, textarea { font:inherit; font-size:16px; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); width:100%; }
-textarea { min-height:70px; }
-.row { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
-.stop[hidden] { display:none; }
-.traits { display:grid; gap:6px; }
-.traits div { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; font-size:15px; }
-.traits select { width:auto; }
-.errors { background:var(--sand); color:var(--warn); border-radius:10px; padding:12px 16px; }
-.errors ul { margin:0; padding-left:20px; }
+const CHAT_CSS = `
+[hidden] { display:none !important; }
+body { height:100dvh; }
+.chat { max-width:720px; margin:0 auto; height:100dvh; display:grid; grid-template-rows:auto 1fr auto; }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-bottom:1px solid var(--line); }
+.top b { font-size:17px; }
+.linkbtn { background:none; border:0; color:var(--teal); padding:6px 0; font-size:14px; font-weight:600; }
+.log { overflow-y:auto; padding:16px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:88%; padding:10px 14px; border-radius:16px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.msg.assistant { align-self:flex-start; background:var(--paper); border:1px solid var(--line); border-bottom-left-radius:4px; }
+.msg.user { align-self:flex-end; background:var(--teal); color:var(--paper); border-bottom-right-radius:4px; }
+.intro { font-size:14px; color:var(--muted); }
+.chips { display:flex; flex-wrap:wrap; gap:8px; align-self:flex-start; }
+.chips button { background:var(--paper); color:var(--teal); border:1px solid var(--teal); border-radius:999px; padding:7px 14px; font-size:15px; }
+.panel { align-self:stretch; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px; display:grid; gap:10px; }
+.trait { display:grid; gap:6px; }
+.trait span { font-size:15px; font-weight:600; }
+.seg { display:grid; grid-template-columns:repeat(3, 1fr); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.seg button { background:transparent; color:var(--ink); border-radius:0; padding:8px 4px; font-size:13px; font-weight:600; }
+.seg button + button { border-left:1px solid var(--line); }
+.seg button[aria-pressed="true"] { background:var(--teal); color:var(--paper); }
+.summary h4 { font-size:17px; }
+.summary ul { margin:0; padding-left:20px; display:grid; gap:4px; font-size:15px; }
+.summary .row { display:flex; flex-wrap:wrap; gap:8px; }
+.typing { align-self:flex-start; color:var(--muted); font-size:14px; }
+.bar { border-top:1px solid var(--line); padding:10px max(16px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:end; background:var(--bg); }
+.bar textarea { font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:20px; background:var(--paper); color:var(--ink); resize:none; max-height:140px; min-height:44px; width:100%; }
+.bar button { height:44px; min-width:44px; border-radius:22px; padding:0 14px; }
+#mic[aria-pressed="true"] { background:var(--flamingo); }
+.gate { max-width:480px; margin:0 auto; padding:40px 16px; display:grid; gap:14px; }
+.gate input { font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink); }
+.err { color:var(--warn); font-size:14px; }
 `;
 
-function stopFields(i) {
-  const opts = DRIVE_CHOICES.map(m => `<option value="${m}"${m === 25 ? " selected" : ""}>Within ${m} minutes</option>`).join("");
-  return `<fieldset class="stop" id="stop${i}"${i > 1 ? " hidden" : ""}><legend>Stop ${i}</legend>
-  <label>Town or area<input name="stop${i}_town" autocomplete="off" placeholder="Wimberley, TX"></label>
-  <div class="row">
-    <label>Arrive<input type="date" name="stop${i}_arrive"></label>
-    <label>Nights<input type="number" name="stop${i}_nights" min="1" max="180" inputmode="numeric"></label>
-  </div>
-  <label>How close to town?<select name="stop${i}_drive">${opts}</select><small>Drive time from the town center. A wider area finds more parks.</small></label>
-  <label>Budget for this stop<input name="stop${i}_budget" placeholder="$700 to $900, or about $40 a night"></label>
-</fieldset>`;
-}
-
-// `sent` is the submitted form (when it comes back with errors) so nothing the tester typed is lost.
-export function orderPage(errors = [], sent = null) {
-  const traits = TRAITS.map(([k, label]) => `<div><span>${e(label)}</span><select name="want_${k}" aria-label="${e(label)}">
-    <option value="no">Don't care</option><option value="nice">Nice to have</option><option value="must">Must have</option></select></div>`).join("");
-  const stops = Array.from({ length: MAX_STOPS }, (_, i) => stopFields(i + 1)).join("");
-  const values = {};
-  if (sent) for (const [k, v] of sent.entries()) if (typeof v === "string" && k !== "code") values[k] = v.slice(0, 2000);
-  const sentJson = JSON.stringify(values).replace(/</g, "\\u003c");
-  const errHtml = errors.length ? `<div class="errors" role="alert"><b>Please fix these:</b><ul>${errors.map(m => `<li>${e(m)}</li>`).join("")}</ul></div>` : "";
-  return shell("RigKit Trip Planner", `<div class="wrap" style="max-width:720px">
-  <header style="display:grid;gap:10px">
-    <div class="eyebrow">RigKit trip planner · beta</div>
-    <h1>Plan an RV trip</h1>
-    <p style="margin:0">Tell us your rig and your stops. We search every RV park and campground around each stop, read the parks' own websites for prices, pad sizes and rules, and send you three picks per stop with what we left out and why.</p>
-    <p class="note">Nothing gets booked and no park is contacted. A plan takes about an hour to build. Keep the link you get next; it shows your plan when it's ready.</p>
-  </header>
-  ${errHtml}
-  <form method="post" action="/orders">
-    <fieldset><legend>Beta access</legend>
-      <label>Access code<input name="code" required autocomplete="off" autocapitalize="characters"></label>
-      <label>Email for your plan link <small>(optional)</small><input type="email" name="email" autocomplete="email"></label>
-    </fieldset>
-    <fieldset><legend>You and your rig</legend>
-      <label>Rig<input name="rig" placeholder="2023 Airstream Flying Cloud travel trailer, 28 ft"></label>
-      <label>Tow vehicle and hitched length<input name="tow" placeholder="2024 GMC 2500HD, about 50 ft hitched"></label>
-      <label>Slide-outs or size limits<input name="limits" placeholder="No slides, 10 ft tall"></label>
-      <label>People and pets<input name="people" placeholder="2 adults, 1 small dog (mini schnauzer)"></label>
-      <div class="row">
-        <label>Hookups<select name="hookups"><option value="full">Full hookups</option><option value="we">Water and electric</option><option value="none">None, boondocking is fine</option></select></label>
-        <label>Amps<select name="amps"><option value="30">30 amp</option><option value="50">50 amp</option><option value="">Either</option></select></label>
-      </div>
-      <label>Solar or generator<input name="power" placeholder="Solar plus a generator"></label>
-      <label>Internet<input name="internet" placeholder="Starlink (needs open sky) plus a hotspot"></label>
-      <label>Memberships<input name="memberships" placeholder="Passport America, Good Sam, Thousand Trails"></label>
-    </fieldset>
-    <fieldset><legend>Trip</legend>
-      <label>Trip name<input name="trip_name" required placeholder="Texas Winter Trip"></label>
-      <label>Whole-trip budget<input name="budget" placeholder="$2,800 to $3,600 for all 8 weeks"></label>
-      <label>OK to spend more at one stop than another?<input name="budget_split" placeholder="Yes, more on the coast is fine"></label>
-    </fieldset>
-    ${stops}
-    <div><button type="button" class="ghost" id="addstop">Add a stop</button></div>
-    <fieldset><legend>What matters</legend>
-      <div class="traits">${traits}</div>
-      <label>What would you give up to save money or get a better spot?<textarea name="give_up"></textarea></label>
-    </fieldset>
-    <fieldset><legend>Travel days</legend>
-      <label>Move days<input name="move_days" placeholder="Saturday or Sunday; I'd shift a day or two for a better park"></label>
-      <label>Drive days<input name="drive_day" placeholder="Comfortable 300 miles, hard max 500"></label>
-    </fieldset>
-    <fieldset><legend>Anything else</legend>
-      <label>The vibe you want, places you love or want to avoid<textarea name="notes"></textarea></label>
-    </fieldset>
-    <div><button type="submit">Build my plan</button></div>
+export function chatPage() {
+  return shell("RigKit Trip Planner", `
+<div class="gate" id="gate" hidden>
+  <div class="eyebrow">RigKit trip planner · beta</div>
+  <h1>Plan an RV trip</h1>
+  <p style="margin:0">Tell us about your rig and where you're headed, by typing or talking. We search every RV park around each stop, read the parks' own websites, and send you three picks per stop with what we left out and why. Nothing gets booked.</p>
+  <label for="code" style="font-weight:600">Beta access code</label>
+  <input id="code" autocomplete="off" autocapitalize="characters">
+  <div><button id="go">Start</button></div>
+  <div class="err" id="gateerr" role="alert"></div>
+</div>
+<div class="chat" id="chat" hidden>
+  <div class="top"><b>RigKit trip planner</b><button class="linkbtn" id="restart">Start over</button></div>
+  <div class="log" id="log" aria-live="polite"></div>
+  <form class="bar" id="bar">
+    <textarea id="text" rows="1" placeholder="Type or tap the mic" aria-label="Your answer"></textarea>
+    <button type="button" class="ghost" id="mic" aria-label="Talk" aria-pressed="false" hidden>🎤</button>
+    <button type="submit" id="send" aria-label="Send">Send</button>
   </form>
 </div>
 <script>
-// Keeps a draft of the form in this browser as you type, and puts back what was sent when the server
-// returns it with errors, so a reload or a failed submit never loses answers.
-const KEY = "rigkit-order-draft";
-const SENT = ${sentJson};
-const form = document.querySelector("form");
-const fields = () => [...form.elements].filter(el => el.name && el.name !== "code" && el.type !== "submit" && el.type !== "button");
-function fill(values) {
-  for (const el of fields()) if (values[el.name] != null) el.value = values[el.name];
+const TRAITS = ${JSON.stringify(TRAITS_UI)};
+const LEVELS = [["must", "Must have"], ["nice", "Nice to have"], ["no", "Don't care"]];
+const K = { code: "rigkit-code", chat: "rigkit-chat", profile: "rigkit-profile" };
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+const $ = id => document.getElementById(id);
+const log = $("log"), text = $("text");
+let state = store.get(K.chat, null); // { id, messages: [{role, text, quick_replies, trait_picker, ready, summary}] }
+let busy = false;
+
+function newId() {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(20)), b => abc[b % abc.length]).join("");
 }
-let draft = {};
-try { draft = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
-fill(Object.keys(SENT).length ? SENT : draft);
-function save() {
-  const v = {};
-  for (const el of fields()) if (el.value) v[el.name] = el.value;
-  try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {}
+function el(tag, cls, txt) { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; }
+function save() { store.set(K.chat, state); }
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { "Content-Type": "application/json", "X-Access-Code": store.get(K.code, ""), ...(opts.headers || {}) } });
+  const body = await r.json().catch(() => ({}));
+  if (r.status === 401) { store.del(K.code); showGate("That access code isn't right."); throw new Error("code"); }
+  return body;
 }
-form.addEventListener("input", save);
-form.addEventListener("change", save);
-if (Object.keys(SENT).length) save();
-const add = document.getElementById("addstop");
-const stops = [...document.querySelectorAll(".stop")];
-stops.forEach(s => { if ([...s.querySelectorAll("input")].some(i => i.value)) s.hidden = false; });
-const syncAdd = () => { add.hidden = !document.querySelector(".stop[hidden]"); };
-syncAdd();
-add.addEventListener("click", () => {
-  const next = document.querySelector(".stop[hidden]");
-  if (next) { next.hidden = false; next.querySelector("input").focus(); }
-  syncAdd();
-});
-const err = document.querySelector(".errors");
-if (err) err.scrollIntoView({ block: "start" });
-</script>`, FORM_CSS);
+
+function render() {
+  log.replaceChildren();
+  const intro = el("p", "intro", "Answer by typing or tap the mic and talk. Your conversation is saved on this phone, so you can leave and come back.");
+  log.append(intro);
+  const msgs = state.messages;
+  msgs.forEach((m, i) => {
+    log.append(el("div", "msg " + m.role, m.text));
+    const last = i === msgs.length - 1 && m.role === "assistant" && !busy;
+    if (!last) return;
+    if (m.ready && m.summary && m.summary.length) log.append(summaryCard(m.summary));
+    if (m.trait_picker) log.append(traitPicker());
+    if (m.quick_replies && m.quick_replies.length) {
+      const chips = el("div", "chips");
+      for (const q of m.quick_replies) { const b = el("button", "", q); b.type = "button"; b.onclick = () => send(q); chips.append(b); }
+      log.append(chips);
+    }
+  });
+  if (busy) log.append(el("div", "typing", "Thinking…"));
+  log.scrollTop = log.scrollHeight;
+}
+
+function traitPicker() {
+  const panel = el("div", "panel");
+  const picks = {};
+  for (const t of TRAITS) {
+    const row = el("div", "trait"); row.append(el("span", "", t));
+    const seg = el("div", "seg");
+    for (const [v, label] of LEVELS) {
+      const b = el("button", "", label); b.type = "button"; b.setAttribute("aria-pressed", "false");
+      b.onclick = () => { picks[t] = v; seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); };
+      seg.append(b);
+    }
+    row.append(seg); panel.append(row);
+  }
+  const done = el("button", "", "Done"); done.type = "button";
+  done.onclick = () => {
+    const by = l => TRAITS.filter(t => (picks[t] || "no") === l);
+    const parts = [["Must have", by("must")], ["Nice to have", by("nice")], ["Don't care", by("no")]].filter(([, v]) => v.length).map(([k, v]) => k + ": " + v.join(", "));
+    send(parts.join(". ") + ".");
+  };
+  panel.append(done);
+  return panel;
+}
+
+function summaryCard(lines) {
+  const card = el("div", "panel summary");
+  card.append(el("h4", "", "Here's what I heard"));
+  const ul = el("ul"); for (const l of lines) ul.append(el("li", "", l)); card.append(ul);
+  const row = el("div", "row");
+  const start = el("button", "", "Start my plan"); start.type = "button";
+  const change = el("button", "ghost", "Change something"); change.type = "button";
+  change.onclick = () => text.focus();
+  start.onclick = async () => {
+    start.disabled = true; start.textContent = "Starting…";
+    try {
+      const r = await api("/chat/" + state.id + "/start", { method: "POST", body: "{}" });
+      if (r.plan_url) {
+        if (r.profile) store.set(K.profile, r.profile);
+        store.del(K.chat);
+        location.href = r.plan_url;
+        return;
+      }
+      card.append(el("div", "err", r.error || "Couldn't start. Try again."));
+    } catch {}
+    start.disabled = false; start.textContent = "Start my plan";
+  };
+  row.append(start, change); card.append(row);
+  return card;
+}
+
+async function send(t) {
+  t = (t || "").trim();
+  if (!t || busy) return;
+  state.messages.push({ role: "user", text: t });
+  busy = true; save(); render();
+  text.value = ""; grow();
+  try {
+    const first = state.messages.filter(m => m.role === "user").length === 1;
+    const r = await api("/chat/" + state.id, { method: "POST", body: JSON.stringify({ text: t, profile: first ? store.get(K.profile, null) : null }) });
+    if (r.reply) state.messages.push(r.reply);
+    else if (r.plan_id) { location.href = "/p/" + r.plan_id; return; }
+    else state.messages.push({ role: "assistant", text: r.error || "Sorry, something went wrong. Please send that again." });
+  } catch (e) {
+    if (e.message !== "code") state.messages.push({ role: "assistant", text: "I couldn't reach the planner. Check your connection and send that again." });
+  }
+  busy = false; save(); render();
+}
+
+function begin() {
+  if (!state || !state.id) state = { id: newId(), messages: [] };
+  $("gate").hidden = true; $("chat").hidden = false;
+  render();
+  if (!state.messages.length) send("Hi, I'd like to plan a trip.");
+  else api("/chat/" + state.id).then(r => {
+    // The server's copy wins if this phone missed a reply (for example, the page closed mid-answer).
+    if (r && Array.isArray(r.messages) && r.messages.length > state.messages.filter(m => !m.local).length) { state.messages = r.messages; save(); render(); }
+    if (r && r.plan_id) location.href = "/p/" + r.plan_id;
+  }).catch(() => {});
+}
+
+function showGate(msg) {
+  $("chat").hidden = true; $("gate").hidden = false;
+  $("gateerr").textContent = msg || "";
+  $("code").focus();
+}
+$("go").onclick = () => { const v = $("code").value.trim(); if (v) { store.set(K.code, v); begin(); } };
+$("code").addEventListener("keydown", e => { if (e.key === "Enter") $("go").click(); });
+$("restart").onclick = () => { if (confirm("Start a new conversation? This one will be cleared.")) { state = null; store.del(K.chat); begin(); } };
+$("bar").addEventListener("submit", e => { e.preventDefault(); send(text.value); });
+function grow() { text.style.height = "auto"; text.style.height = Math.min(text.scrollHeight, 140) + "px"; }
+text.addEventListener("input", grow);
+text.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer: coarse)").matches) { e.preventDefault(); send(text.value); } });
+
+// Talking uses the phone's own speech-to-text; the words land in the box so they can be checked before sending.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  const mic = $("mic"); mic.hidden = false;
+  let rec = null, base = "";
+  mic.onclick = () => {
+    if (rec) { rec.stop(); return; }
+    rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = true;
+    base = text.value ? text.value.trim() + " " : "";
+    rec.onresult = ev => { let t = ""; for (const r of ev.results) t += r[0].transcript; text.value = base + t; grow(); };
+    rec.onend = () => { rec = null; mic.setAttribute("aria-pressed", "false"); };
+    rec.onerror = () => { rec = null; mic.setAttribute("aria-pressed", "false"); };
+    mic.setAttribute("aria-pressed", "true"); rec.start();
+  };
+}
+
+if (store.get(K.code, "")) begin(); else showGate();
+</script>`, CHAT_CSS);
 }
 
 const STATUS_TEXT = {
@@ -178,7 +271,7 @@ export function statusPage(o) {
   <h1>${e(o.order.trip_name)}</h1>
   <p class="note"><b>${e(STATUS_TEXT[o.status] || STATUS_TEXT.running)}</b></p>
   ${extra}
-  <script>try { localStorage.removeItem("rigkit-order-draft"); } catch {}</script>
+  <script>try { localStorage.removeItem("rigkit-chat"); } catch {}</script>
   <p class="muted" style="font-size:14px">Ordered ${e(started)} · ${o.order.stops.length} stop${o.order.stops.length > 1 ? "s" : ""}</p>
 </div>`, "", refresh);
 }

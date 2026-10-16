@@ -1,90 +1,74 @@
-// Turns the order form into the order JSON the planner agent and discover.py read
-// (same shape as trip-planner/beta/examples/texas-order.json). Pure functions, no I/O.
+// Checks the trip the interview agent gathered and turns it into the order JSON the planner agent and
+// discover.py read (same shape as trip-planner/beta/examples/texas-order.json). Pure functions, no I/O.
 
-export const MAX_STOPS = 6;
+export const MAX_STOPS = 8;
 export const DRIVE_CHOICES = [15, 25, 35, 45, 60];
-export const TRAITS = [
-  ["concrete", "Concrete pads"],
-  ["pull_through", "Pull-through sites"],
-  ["full_hookups", "Full hookups"],
-  ["open_sky", "Open sky (for Starlink)"],
-  ["dog_area", "Dog park or fenced area"],
-  ["quiet", "Quiet or adults only"],
-  ["pool", "Pool or clubhouse"],
-  ["state_parks", "State parks"],
-  ["waterfront", "Waterfront"],
-  ["near_town", "Near town"],
-];
-const LEVELS = { must: "must-have", nice: "nice-to-have", no: "don't care" };
 const LIMIT = 600; // characters per free-text answer
 
-function text(form, name, max = LIMIT) {
-  const v = form.get(name);
-  return typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "";
-}
+const clean = (v, max = LIMIT) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
 
 function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "trip";
 }
 
-const pretty = iso => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+export const pretty = iso => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-function addDays(iso, n) {
+export function addDays(iso, n) {
   const d = new Date(iso + "T12:00:00Z");
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 }
 
-// Returns { order } or { errors: [message, ...] }. `form` is a FormData (or anything with get()).
-export function parseOrder(form, today = new Date().toISOString().slice(0, 10)) {
+// `draft` is the interview agent's trip object (see INTERVIEW_SCHEMA in interview.js).
+// Returns { order } or { errors: [message, ...] } written so the agent can put them to the customer.
+export function buildOrder(draft, today = new Date().toISOString().slice(0, 10)) {
   const errors = [];
-  const tripName = text(form, "trip_name", 80);
-  if (!tripName) errors.push("Give the trip a name.");
-  const email = text(form, "email", 200);
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.push("That email address doesn't look right.");
+  const d = draft && typeof draft === "object" ? draft : {};
+  const tripName = clean(d.trip_name, 80);
+  if (!tripName) errors.push("The trip has no name yet.");
 
   const stops = [];
-  for (let i = 1; i <= MAX_STOPS; i++) {
-    const town = text(form, `stop${i}_town`, 100);
-    const arrive = text(form, `stop${i}_arrive`, 10);
-    const nights = parseInt(text(form, `stop${i}_nights`, 4), 10);
-    if (!town && !arrive && !nights) continue;
-    const label = town ? `Stop ${i} (${town})` : `Stop ${i}`;
-    if (!town) { errors.push(`${label}: say which town or area.`); continue; }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(arrive)) { errors.push(`${label}: pick an arrival date.`); continue; }
-    if (arrive < addDays(today, -1)) errors.push(`${label}: the arrival date, ${pretty(arrive)}, is in the past. Check the year.`);
-    if (!(nights >= 1 && nights <= 180)) { errors.push(`${label}: nights should be 1 to 180.`); continue; }
-    let minutes = parseInt(text(form, `stop${i}_drive`, 3), 10);
-    if (!DRIVE_CHOICES.includes(minutes)) minutes = 25;
-    const key = stops.some(s => s.key === town) ? `${town} (${i})` : town;
-    stops.push({ key, name: town, town, arrive, nights, max_drive_min: minutes, budget: text(form, `stop${i}_budget`, 80) || "not given" });
-  }
-  if (!stops.length) errors.push("Add at least one stop.");
+  const raw = Array.isArray(d.stops) ? d.stops.slice(0, MAX_STOPS) : [];
+  raw.forEach((s, idx) => {
+    const town = clean(s && s.town, 100);
+    const arrive = clean(s && s.arrive, 10);
+    const nights = Math.round(Number(s && s.nights));
+    const label = town ? `Stop ${idx + 1} (${town})` : `Stop ${idx + 1}`;
+    if (!town) return errors.push(`${label} has no town or area.`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(arrive) || isNaN(Date.parse(arrive))) return errors.push(`${label} has no arrival date.`);
+    if (arrive < addDays(today, -1)) errors.push(`${label}: the arrival date, ${pretty(arrive)}, is in the past. Today is ${pretty(today)}.`);
+    if (!(nights >= 1 && nights <= 180)) return errors.push(`${label}: nights should be 1 to 180.`);
+    let minutes = Math.round(Number(s.max_drive_min));
+    if (!DRIVE_CHOICES.includes(minutes)) minutes = DRIVE_CHOICES.reduce((a, b) => (Math.abs(b - minutes) < Math.abs(a - minutes) ? b : a), 25);
+    const key = stops.some(x => x.key === town) ? `${town} (${idx + 1})` : town;
+    stops.push({ key, name: town, town, arrive, nights, max_drive_min: minutes,
+      budget: clean(s.budget, 120) || "not given", notes: clean(s.notes) || null });
+  });
+  if (!stops.length && !errors.length) errors.push("The trip has no stops yet.");
   for (let i = 1; i < stops.length; i++) {
     const prevEnd = addDays(stops[i - 1].arrive, stops[i - 1].nights);
     if (stops[i].arrive < prevEnd) {
-      errors.push(`${stops[i].town}: arrives ${pretty(stops[i].arrive)}, but ${stops[i - 1].town} runs until ${pretty(prevEnd)}. Change one of the dates or the nights.`);
+      errors.push(`${stops[i].town} arrives ${pretty(stops[i].arrive)}, but ${stops[i - 1].town} runs until ${pretty(prevEnd)}.`);
     }
   }
   if (errors.length) return { errors };
 
-  const wants = { "must-have": [], "nice-to-have": [], "don't care": [] };
-  for (const [k, label] of TRAITS) {
-    const lvl = LEVELS[text(form, `want_${k}`, 4)] || "don't care";
-    wants[lvl].push(label.toLowerCase());
-  }
-  const wantLine = Object.entries(wants).filter(([, v]) => v.length).map(([k, v]) => `${k[0].toUpperCase()}${k.slice(1)}: ${v.join(", ")}.`).join(" ");
-
+  const p = d.profile || {};
   const customer = [
-    text(form, "rig") && `Rig: ${text(form, "rig")}.`,
-    text(form, "tow") && `Tow vehicle and hitched length: ${text(form, "tow")}.`,
-    text(form, "limits") && `Slide-outs and size limits: ${text(form, "limits")}.`,
-    text(form, "people") && `People and pets: ${text(form, "people")}.`,
-    `Hookups needed: ${{ full: "full hookups", we: "water and electric", none: "none (boondocking is fine)" }[text(form, "hookups", 4)] || "not given"}${text(form, "amps", 3) ? `, ${text(form, "amps", 3)} amp` : ""}.`,
-    text(form, "power") && `Solar or generator: ${text(form, "power")}.`,
-    text(form, "internet") && `Internet: ${text(form, "internet")}.`,
-    text(form, "memberships") && `Memberships: ${text(form, "memberships")}.`,
+    clean(p.rig) && `Rig: ${clean(p.rig)}.`,
+    clean(p.tow) && `Tow vehicle and hitched length: ${clean(p.tow)}.`,
+    clean(p.limits) && `Slide-outs and size limits: ${clean(p.limits)}.`,
+    clean(p.people) && `People and pets: ${clean(p.people)}.`,
+    `Hookups needed: ${clean(p.hookups) || "not given"}.`,
+    clean(p.power) && `Solar or generator: ${clean(p.power)}.`,
+    clean(p.internet) && `Internet: ${clean(p.internet)}.`,
+    clean(p.memberships) && `Memberships: ${clean(p.memberships)}.`,
   ].filter(Boolean).join(" ");
+
+  const w = d.wants || {};
+  const list = v => (Array.isArray(v) ? v.map(x => clean(x, 80)).filter(Boolean) : []);
+  const wants = [["Must-have", list(w.must)], ["Nice-to-have", list(w.nice)], ["Don't care", list(w.dont_care)]]
+    .filter(([, v]) => v.length).map(([k, v]) => `${k}: ${v.join(", ")}.`).join(" ");
 
   const last = stops[stops.length - 1];
   return {
@@ -92,16 +76,16 @@ export function parseOrder(form, today = new Date().toISOString().slice(0, 10)) 
       trip_name: tripName,
       slug: slugify(tripName),
       customer,
-      budget: text(form, "budget", 200) || "not given",
-      budget_split: text(form, "budget_split", 200) || null,
-      move_days: text(form, "move_days", 200) || "no preference given",
-      drive_day: text(form, "drive_day", 200) || "not given",
+      budget: clean(d.budget, 200) || "not given",
+      budget_split: clean(d.budget_split, 200) || null,
+      move_days: clean(d.move_days, 200) || "no preference given",
+      drive_day: clean(d.drive_day, 200) || "not given",
       stops,
       ends: addDays(last.arrive, last.nights),
-      wants: wantLine,
-      give_up: text(form, "give_up") || null,
-      notes: text(form, "notes") || null,
+      wants: wants || "No preferences given.",
+      give_up: clean(d.give_up) || null,
+      notes: clean(d.notes, 1200) || null,
     },
-    email: email || null,
+    profile: Object.fromEntries(["rig", "tow", "limits", "people", "hookups", "power", "internet", "memberships"].map(k => [k, clean(p[k])])),
   };
 }
