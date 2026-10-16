@@ -132,7 +132,7 @@ function render() {
     if (!last) return;
     if (m.ready && m.summary && m.summary.length) log.append(summaryCard(m.summary));
     if (m.trait_picker) log.append(traitPicker());
-    if (m.quick_replies && m.quick_replies.length) {
+    if (!m.ready && m.quick_replies && m.quick_replies.length) {
       const chips = el("div", "chips");
       for (const q of m.quick_replies) { const b = el("button", "", q); b.type = "button"; b.onclick = () => send(q); chips.append(b); }
       log.append(chips);
