@@ -69,10 +69,14 @@ function stopFields(i) {
 </fieldset>`;
 }
 
-export function orderPage(errors = [], url = "") {
+// `sent` is the submitted form (when it comes back with errors) so nothing the tester typed is lost.
+export function orderPage(errors = [], sent = null) {
   const traits = TRAITS.map(([k, label]) => `<div><span>${e(label)}</span><select name="want_${k}" aria-label="${e(label)}">
     <option value="no">Don't care</option><option value="nice">Nice to have</option><option value="must">Must have</option></select></div>`).join("");
   const stops = Array.from({ length: MAX_STOPS }, (_, i) => stopFields(i + 1)).join("");
+  const values = {};
+  if (sent) for (const [k, v] of sent.entries()) if (typeof v === "string" && k !== "code") values[k] = v.slice(0, 2000);
+  const sentJson = JSON.stringify(values).replace(/</g, "\\u003c");
   const errHtml = errors.length ? `<div class="errors" role="alert"><b>Please fix these:</b><ul>${errors.map(m => `<li>${e(m)}</li>`).join("")}</ul></div>` : "";
   return shell("RigKit Trip Planner", `<div class="wrap" style="max-width:720px">
   <header style="display:grid;gap:10px">
@@ -122,14 +126,38 @@ export function orderPage(errors = [], url = "") {
   </form>
 </div>
 <script>
+// Keeps a draft of the form in this browser as you type, and puts back what was sent when the server
+// returns it with errors, so a reload or a failed submit never loses answers.
+const KEY = "rigkit-order-draft";
+const SENT = ${sentJson};
+const form = document.querySelector("form");
+const fields = () => [...form.elements].filter(el => el.name && el.name !== "code" && el.type !== "submit" && el.type !== "button");
+function fill(values) {
+  for (const el of fields()) if (values[el.name] != null) el.value = values[el.name];
+}
+let draft = {};
+try { draft = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
+fill(Object.keys(SENT).length ? SENT : draft);
+function save() {
+  const v = {};
+  for (const el of fields()) if (el.value) v[el.name] = el.value;
+  try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {}
+}
+form.addEventListener("input", save);
+form.addEventListener("change", save);
+if (Object.keys(SENT).length) save();
 const add = document.getElementById("addstop");
-const shown = () => [...document.querySelectorAll(".stop")].filter(s => !s.hidden || s.querySelector("input").value);
-shown().forEach(s => s.hidden = false);
+const stops = [...document.querySelectorAll(".stop")];
+stops.forEach(s => { if ([...s.querySelectorAll("input")].some(i => i.value)) s.hidden = false; });
+const syncAdd = () => { add.hidden = !document.querySelector(".stop[hidden]"); };
+syncAdd();
 add.addEventListener("click", () => {
   const next = document.querySelector(".stop[hidden]");
   if (next) { next.hidden = false; next.querySelector("input").focus(); }
-  if (!document.querySelector(".stop[hidden]")) add.hidden = true;
+  syncAdd();
 });
+const err = document.querySelector(".errors");
+if (err) err.scrollIntoView({ block: "start" });
 </script>`, FORM_CSS);
 }
 
@@ -150,6 +178,7 @@ export function statusPage(o) {
   <h1>${e(o.order.trip_name)}</h1>
   <p class="note"><b>${e(STATUS_TEXT[o.status] || STATUS_TEXT.running)}</b></p>
   ${extra}
+  <script>try { localStorage.removeItem("rigkit-order-draft"); } catch {}</script>
   <p class="muted" style="font-size:14px">Ordered ${e(started)} · ${o.order.stops.length} stop${o.order.stops.length > 1 ? "s" : ""}</p>
 </div>`, "", refresh);
 }

@@ -29,10 +29,10 @@ test("reports problems instead of ordering", () => {
   assert.deepEqual(errors, [
     "Give the trip a name.",
     "That email address doesn't look right.",
-    "Fredericksburg, TX: arrives before the previous stop ends (2026-12-13).",
+    "Fredericksburg, TX: arrives Tue, Dec 1, 2026, but Wimberley, TX runs until Sun, Dec 13, 2026. Change one of the dates or the nights.",
   ]);
   assert.deepEqual(parseOrder(form({ trip_name: "x" }), "2026-10-16").errors, ["Add at least one stop."]);
-  assert.match(parseOrder(form({ ...base, stop1_arrive: "2026-01-01" }), "2026-10-16").errors[0], /in the past/);
+  assert.match(parseOrder(form({ ...base, stop1_arrive: "2026-01-01" }), "2026-10-16").errors[0], /Stop 1 \(Wimberley, TX\): the arrival date, Thu, Jan 1, 2026, is in the past\. Check the year\./);
 });
 
 test("unknown drive choices fall back to 25 minutes and long text is cut", () => {

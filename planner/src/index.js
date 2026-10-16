@@ -41,14 +41,14 @@ export default {
       if (!IDS || !env.ANTHROPIC_API_KEY) return orderPage(["The planner isn't switched on yet."]);
       const form = await req.formData();
       if (!env.ACCESS_CODE || !sameText(String(form.get("code") || "").trim().toUpperCase(), env.ACCESS_CODE.trim().toUpperCase())) {
-        return orderPage(["That access code isn't right."]);
+        return orderPage(["That access code isn't right."], form);
       }
       const ip = req.headers.get("CF-Connecting-IP") || "local";
       const gate = env.GATE.get(env.GATE.idFromName("gate"));
       const ok = await gate.take(ip, PER_IP_PER_HOUR, parseInt(env.ORDERS_PER_DAY || "10", 10));
-      if (!ok) return orderPage(["Too many plans have been ordered today. Please try again tomorrow."]);
+      if (!ok) return orderPage(["Too many plans have been ordered today. Please try again tomorrow."], form);
       const { order, email, errors } = parseOrder(form);
-      if (errors) return orderPage(errors);
+      if (errors) return orderPage(errors, form);
       const id = newId();
       await env.ORDERS.get(env.ORDERS.idFromName(id)).start(id, order, email);
       return Response.redirect(`${url.origin}/p/${id}`, 303);

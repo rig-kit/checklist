@@ -27,6 +27,8 @@ function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "trip";
 }
 
+const pretty = iso => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
 function addDays(iso, n) {
   const d = new Date(iso + "T12:00:00Z");
   d.setUTCDate(d.getUTCDate() + n);
@@ -47,10 +49,10 @@ export function parseOrder(form, today = new Date().toISOString().slice(0, 10)) 
     const arrive = text(form, `stop${i}_arrive`, 10);
     const nights = parseInt(text(form, `stop${i}_nights`, 4), 10);
     if (!town && !arrive && !nights) continue;
-    const label = `Stop ${i}`;
+    const label = town ? `Stop ${i} (${town})` : `Stop ${i}`;
     if (!town) { errors.push(`${label}: say which town or area.`); continue; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(arrive)) { errors.push(`${label}: pick an arrival date.`); continue; }
-    if (arrive < today) errors.push(`${label}: the arrival date is in the past.`);
+    if (arrive < addDays(today, -1)) errors.push(`${label}: the arrival date, ${pretty(arrive)}, is in the past. Check the year.`);
     if (!(nights >= 1 && nights <= 180)) { errors.push(`${label}: nights should be 1 to 180.`); continue; }
     let minutes = parseInt(text(form, `stop${i}_drive`, 3), 10);
     if (!DRIVE_CHOICES.includes(minutes)) minutes = 25;
@@ -60,7 +62,9 @@ export function parseOrder(form, today = new Date().toISOString().slice(0, 10)) 
   if (!stops.length) errors.push("Add at least one stop.");
   for (let i = 1; i < stops.length; i++) {
     const prevEnd = addDays(stops[i - 1].arrive, stops[i - 1].nights);
-    if (stops[i].arrive < prevEnd) errors.push(`${stops[i].town}: arrives before the previous stop ends (${prevEnd}).`);
+    if (stops[i].arrive < prevEnd) {
+      errors.push(`${stops[i].town}: arrives ${pretty(stops[i].arrive)}, but ${stops[i - 1].town} runs until ${pretty(prevEnd)}. Change one of the dates or the nights.`);
+    }
   }
   if (errors.length) return { errors };
 
