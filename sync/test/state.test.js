@@ -48,5 +48,25 @@ test("bad or oversized input is dropped", () => {
 
 test("cleanState keeps only valid pieces", () => {
   const s = cleanState({ trip: 3, name: "Trip", checked: { h1: true, "bad id": true }, custom: [{ id: "u1", section: "kitchen", text: "Ok" }, { id: 5 }], extra: 1 });
-  assert.deepEqual(s, { trip: 3, name: "Trip", checked: { h1: true }, hidden: {}, custom: [{ id: "u1", section: "kitchen", text: "Ok" }], deleted: {} });
+  assert.deepEqual(s, { trip: 3, name: "Trip", checked: { h1: true }, hidden: {}, custom: [{ id: "u1", section: "kitchen", text: "Ok" }], deleted: {}, order: {} });
+});
+
+test("your own order is shared, can be put back, and bad orders are dropped", () => {
+  const s = emptyState();
+  assert.equal(applyChecked(s, { t: "order", sec: "kitchen", ids: ["c3", "c1"] }), true);
+  assert.equal(applyChecked(s, { t: "order", sec: "_sections", ids: ["final", "hookups"] }), true);
+  assert.deepEqual(s.order, { kitchen: ["c3", "c1"], _sections: ["final", "hookups"] });
+  applyChecked(s, { t: "order", sec: "kitchen", ids: [] });
+  assert.deepEqual(s.order, { _sections: ["final", "hookups"] });
+  assert.equal(applyChecked(s, { t: "order", sec: "kitchen", ids: ["bad id!"] }), false);
+  assert.equal(applyChecked(s, { t: "order", sec: "kitchen", ids: "c1" }), false);
+  assert.equal(applyChecked(s, { t: "order", sec: "kitchen", ids: Array(LIMITS.orderIds + 1).fill("c1") }), false);
+});
+
+test("a list saved before custom order existed still takes an order", () => {
+  const s = { trip: 1, name: "", checked: {}, hidden: {}, custom: [], deleted: {} };
+  assert.equal(applyChecked(s, { t: "order", sec: "bath", ids: ["b2", "b1"] }), true);
+  assert.deepEqual(s.order, { bath: ["b2", "b1"] });
+  const c = cleanState({ order: { bath: ["b2", "b1"], "x y": ["b1"], tires: [1] } });
+  assert.deepEqual(c.order, { bath: ["b2", "b1"] });
 });

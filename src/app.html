@@ -151,6 +151,8 @@ h1 { font-size: 2em; line-height: 1.08; font-weight: 700; letter-spacing: -.01em
 .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 4px; }
 .toolbar .btn { padding: 4px 10px; line-height: 1.15; }
 .toolbar .btn[hidden] + .btn, .toolbar .btn:only-child { grid-column: 1 / -1; }
+#resetBtn { grid-column: 1 / -1; min-height: 56px; font-size: 1.05em; }
+.bi { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* First visit: start a new checklist or join one */
 .welcome { display: grid; gap: 14px; padding-top: 22px; }
@@ -226,7 +228,17 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .tag.mine { background: var(--caution-soft); color: var(--caution); }
 
 /* Edit-mode rows */
-.edit-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; min-height: 64px; }
+.edit-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px 10px 16px; min-height: 64px; }
+.acts { display: flex; gap: 6px; align-items: center; }
+.btn.move { width: 44px; min-height: 44px; padding: 0; }
+.btn.move svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.btn.move:disabled { opacity: .3; cursor: default; }
+.sec-move { display: flex; gap: 6px; align-items: center; padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+.sec-move .small { margin-left: 4px; }
+/* Bigger text or a narrow phone: the buttons go on their own line under the item */
+:root[data-size="1"] .edit-row, :root[data-size="2"] .edit-row { grid-template-columns: 1fr; }
+:root[data-size="1"] .acts, :root[data-size="2"] .acts { justify-content: flex-end; }
+@media (max-width: 359px) { .edit-row { grid-template-columns: 1fr; } .acts { justify-content: flex-end; } }
 .item.is-hidden .main { color: var(--muted); text-decoration: line-through; }
 .add-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
 .add-row input {
@@ -247,11 +259,33 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 
 /* Info blocks */
 .info { margin-top: 28px; display: grid; gap: 14px; }
-#homeHelp, #guide, #tipTitle, #fbTitle { scroll-margin-top: 90px; }
-details.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
-details.card summary { min-height: 60px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.15em; cursor: pointer; }
-details.card ol { margin: 0 0 16px; padding-left: 1.3em; display: grid; gap: 8px; }
-details.card h3 { font-size: 1em; margin: 6px 0 8px; }
+#tipTitle, #fbTitle { scroll-margin-top: 90px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+.card ol { margin: 0 0 16px; padding-left: 1.3em; display: grid; gap: 8px; }
+.card h3 { font-size: 1em; margin: 6px 0 8px; }
+
+/* Pages: each opens on its own screen under the header, with a way back */
+body.page-open .progress, body.page-open .panel, body.page-open .welcome, body.page-open .sharebox,
+body.page-open .sections, body.page-open .alldone { display: none; }
+.page { margin-top: 18px; padding-bottom: 16px; }
+.page > h2 { font-size: 1.5em; margin: 2px 0 12px; }
+.page > h2:focus { outline: none; }
+.page-top { padding-top: 6px; }
+.back {
+  min-height: 48px; background: none; border: 0; padding: 0 6px 0 0; color: var(--accent); cursor: pointer;
+  font: inherit; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+}
+.back::before { content: ""; width: 10px; height: 10px; border-left: 3px solid currentColor; border-bottom: 3px solid currentColor; transform: rotate(45deg); margin-left: 4px; }
+.page-intro { margin: 0 0 14px; color: var(--muted); }
+#page-home h3 { font-size: 1.1em; margin: 14px 0 8px; }
+.mine-sec { border-top: 1px solid var(--line); padding: 12px 0; }
+.mine-sec h3 { font-size: 1.1em; margin: 0 0 4px; color: var(--accent); }
+.mine-items { list-style: none; margin: 0; padding: 0; display: grid; }
+.mine-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; min-height: 60px; padding: 6px 0; }
+.mine-row + .mine-row { border-top: 1px solid var(--line); }
+.mine-empty { margin: 0 0 16px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft); }
+#mineList > .btn { margin: 4px 0 12px; width: 100%; }
+#page-mine .btn-row { padding-top: 6px; }
 .tipjar { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; display: grid; gap: 12px; }
 .tipjar h2 { font-size: 1.35em; }
 .tipjar p { margin: 0; color: var(--muted); }
@@ -310,10 +344,10 @@ details.card h3 { font-size: 1em; margin: 6px 0 8px; }
 .g-item { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
 .g-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; }
 .g-icon svg { width: 24px; height: 24px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-details.card .g-item h3 { margin: 8px 0 6px; font-size: 1.15em; color: var(--accent); }
+.card .g-item h3 { margin: 8px 0 6px; font-size: 1.15em; color: var(--accent); }
 .g-item p { margin: 0; }
 .g-item p + p, .g-item ol + p, .g-item p + ol { margin-top: 8px; }
-details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
+.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 .g-item li::marker { font-weight: 700; color: var(--accent); }
 .ui { font-weight: 700; background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .g-small { color: var(--muted); font-size: .88em; }
@@ -331,8 +365,8 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>Menu
       </button>
       <nav class="menu-panel" id="menuPanel" aria-label="Menu" hidden>
-        <button type="button" id="menuReset"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/></svg>Start a new travel day</button>
         <button type="button" id="menuGuide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4"/><path d="M12 17.6h.01"/></svg>How to use this</button>
+        <button type="button" id="menuMine"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2"/></svg>My custom and hidden items</button>
         <button type="button" id="menuShare" hidden><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.4c2.1.7 3.5 2.8 3.5 5.6"/></svg>Share with my travel partner</button>
         <button type="button" id="menuHome"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7"/><path d="M8.5 11h7"/><path d="M10.5 18.5h3"/></svg>Put this on your home screen</button>
         <button type="button" id="menuTip"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 2.8c-.6 1 .6 1.7 0 2.7"/><path d="M12 2.8c-.6 1 .6 1.7 0 2.7"/></svg>Buy me a coffee</button>
@@ -384,14 +418,15 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       <button type="button" data-role="all" id="role-all">Everything</button>
     </div>
     <div class="toolbar">
+      <button type="button" class="btn solid" id="resetBtn"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/></svg>Start a new travel day</button>
       <button type="button" class="btn quiet" id="editBtn">Customize list</button>
       <button type="button" class="btn" id="shareBtn" hidden>Share list</button>
     </div>
     <div class="editnote" id="editNote" hidden>
-      <p><strong>Customizing.</strong> Tap Hide on anything your trailer doesn't have. Add your own items at the bottom of each section.</p>
+      <p><strong>Customizing.</strong> Tap Hide on anything your trailer doesn't have. Use the arrows to change the order. Add your own items at the bottom of each section.</p>
       <div class="btn-row">
         <button type="button" class="btn solid" id="editDone">Done customizing</button>
-        <button type="button" class="btn quiet" id="showAll">Show all hidden items</button>
+        <button type="button" class="btn quiet" id="editMine">See my custom and hidden items</button>
       </div>
     </div>
     <div class="confirm" id="resetConfirm" hidden>
@@ -467,15 +502,10 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
   <div class="sections" id="sections"></div>
 
-  <div class="alldone" id="allDone" hidden>
-    <h2>All done. Safe travels!</h2>
-    <p>Every item on your list is checked.</p>
-    <button type="button" class="btn" id="nextTripBtn">Start next travel day</button>
-  </div>
-
-  <div class="info">
-    <details class="card" id="guide" hidden>
-      <summary>How to use this checklist</summary>
+  <div class="pages">
+    <section class="card page" id="page-guide" aria-labelledby="guideTitle" hidden>
+      <div class="page-top"><button type="button" class="back">Back to checklist</button></div>
+      <h2 id="guideTitle" tabindex="-1">How to use this checklist</h2>
       <div class="guide">
         <div class="g-item">
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.5 3 3 5-6"/></svg></span>
@@ -506,8 +536,10 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
             <ol>
               <li>Tap <b class="ui">Customize list</b>.</li>
               <li>Tap <b class="ui">Hide</b> on anything your trailer doesn't have.</li>
+              <li>Use the up and down arrows to put items, or whole sections, in the order you work.</li>
               <li>Add your own items at the bottom of any section.</li>
             </ol>
+            <p>To see everything you've added, hidden, or moved, open the <b class="ui">Menu</b> and tap <b class="ui">My custom and hidden items</b>.</p>
             <p class="g-small">"If equipped" items only apply to some trailers.</p>
           </div>
         </div>
@@ -529,7 +561,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/></svg></span>
           <div>
             <h3>Start a new travel day</h3>
-            <p>Open the <b class="ui">Menu</b> and tap <b class="ui">Start a new travel day</b>. It unchecks everything and keeps your own items. Once everything is checked, a <b class="ui">Start next travel day</b> button also shows at the bottom.</p>
+            <p>Tap <b class="ui">Start a new travel day</b> at the top of the checklist. It unchecks everything and keeps your own items. Once everything is checked, a <b class="ui">Start next travel day</b> button also shows at the bottom.</p>
             <p id="guideResetShare" hidden>If you share with your partner, the list stays shared, so their phone starts the new travel day too. No need to share again.</p>
           </div>
         </div>
@@ -562,10 +594,11 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
           </div>
         </div>
       </div>
-    </details>
+    </section>
 
-    <details class="card" id="homeHelp" hidden>
-      <summary>Put this on your home screen</summary>
+    <section class="card page" id="page-home" aria-labelledby="homeTitle" hidden>
+      <div class="page-top"><button type="button" class="back">Back to checklist</button></div>
+      <h2 id="homeTitle" tabindex="-1">Put this on your home screen</h2>
       <h3>iPhone or iPad</h3>
       <ol>
         <li>Open this page in <strong>Safari</strong>.</li>
@@ -578,8 +611,26 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         <li>Tap the <strong>three dots</strong> in the top corner.</li>
         <li>Tap <strong>Add to Home screen</strong>, then tap <strong>Add</strong>.</li>
       </ol>
-    </details>
+    </section>
 
+    <section class="card page" id="page-mine" aria-labelledby="mineTitle" hidden>
+      <div class="page-top"><button type="button" class="back">Back to checklist</button></div>
+      <h2 id="mineTitle" tabindex="-1">My custom and hidden items</h2>
+      <p class="page-intro">Everything you've added, hidden, or moved, all in one place.</p>
+      <div id="mineList"></div>
+      <div class="btn-row col">
+        <button type="button" class="btn solid" id="mineEdit">Customize the checklist</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="alldone" id="allDone" hidden>
+    <h2>All done. Safe travels!</h2>
+    <p>Every item on your list is checked.</p>
+    <button type="button" class="btn" id="nextTripBtn">Start next travel day</button>
+  </div>
+
+  <div class="info">
     <section class="tipjar pink" aria-labelledby="tipTitle">
       <h2 id="tipTitle">Did this help? Buy me a coffee!</h2>
       <p>This checklist is free. If it helped you arrive safely, you can buy me a coffee! Apple Pay, Google Pay, and cards accepted, or send me a Venmo.</p>
@@ -624,10 +675,13 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     { id: "hookups", name: "Hookups & Utilities", who: "outside", items: [
       ["h1", "Black tank dumped"],
       ["h14", "Gray tank dumped"],
-      ["h2", "Sewer hose rinsed, capped and stowed"],
-      ["h3", "Water hoses and filter disconnected, drained and stowed"],
-      ["h4", "Hose splitter and pressure regulator taken off the spigot"],
-      ["h5", "City water and black tank flush caps closed"],
+      ["h2", "Sewer hose rinsed, capped, and stowed"],
+      ["h3", "Water hose disconnected, drained, and stowed"],
+      ["h15", "Water filter disconnected, drained, and stowed", 1],
+      ["h4", "Hose splitter taken off the spigot", 1],
+      ["h16", "Pressure regulator taken off the spigot"],
+      ["h5", "City water inlet cap closed"],
+      ["h17", "Black tank flush cap closed"],
       ["h6", "Power cord unplugged and stowed"],
       ["h7", "Surge protector removed from the post"],
       ["h8", "Cable or satellite cord disconnected", 1],
@@ -639,88 +693,121 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     { id: "exterior", name: "Exterior Stow", who: "outside", items: [
       ["e1", "Main awning retracted and locked"],
       ["e2", "Window awnings secured", 1],
-      ["e3", "Outdoor gear packed: chairs, grill, rug, table"],
+      ["e3", "Outdoor chairs packed"],
+      ["e9", "Outdoor table packed"],
+      ["e10", "Grill packed", 1],
+      ["e11", "Outdoor rug packed"],
       ["e4", "Exterior shower stowed, door closed and locked", 1],
       ["e5", "Roof clear of any loose objects"],
       ["e8", "Outside stove exhaust vents closed"],
-      ["e6", "Leveling blocks and pads picked up"],
+      ["e6", "Leveling blocks picked up"],
+      ["e12", "Stabilizer jack pads picked up"],
       ["e7", "Entry steps fully retracted and locked"],
-      ["h13", "Exterior compartments and hatches closed and locked"]
+      ["h13", "Exterior storage compartments closed and locked"],
+      ["h18", "Exterior hatches closed and locked"]
     ]},
     { id: "tires", name: "Wheels & Tires", who: "outside", items: [
-      ["t1", "Tire pressure checked cold on trailer and tow vehicle"],
+      ["t1", "Trailer tire pressure checked cold"],
+      ["t8", "Tow vehicle tire pressure checked cold"],
       ["t2", "Visual tire check"],
       ["t3", "Lug nuts torqued to spec in a star pattern", 0, "On 6-lug wheels: 1, 4, 2, 5, 3, 6."],
       ["t4", "Tire pressure monitor on and reading every tire", 1],
       ["t5", "Stabilizer jacks fully raised"],
       ["t6", "Wheel chocks removed and stowed"],
-      ["t7", "Look underneath for leaks, hanging items or obstructions"]
+      ["t7", "Look underneath for leaks, hanging items, or obstructions"]
     ]},
     { id: "hitch", name: "Hitch & Tow Setup", who: "outside", items: [
-      ["k1", "Hitch pin and clip in place in the receiver"],
-      ["k2", "Coupler latched on the ball and locked"],
+      ["k1", "Hitch pin in place in the receiver"],
+      ["k12", "Hitch pin clip in place"],
+      ["k2", "Coupler latched on the ball"],
+      ["k13", "Coupler lock in place"],
       ["k4", "Weight distribution and/or sway control connected and tensioned", 1],
       ["k5", "Safety chains crossed and connected"],
       ["k6", "Breakaway cable clipped to the tow vehicle, not the chains"],
       ["k7", "7-pin plug connected"],
-      ["k8", "Tongue jack fully raised, foot or pad removed and stored"],
-      ["k9", "Lights checked with a helper: running, turn signals, brakes, clearance"],
+      ["k8", "Tongue jack fully raised"],
+      ["k14", "Tongue jack foot or pad removed and stored"],
+      ["k9", "Running lights working", 0, "A helper behind the trailer makes the light checks quick."],
+      ["k15", "Left turn signal working"],
+      ["k16", "Right turn signal working"],
+      ["k17", "Brake lights working"],
+      ["k18", "Clearance lights working"],
       ["k10", "Brake controller tested: squeeze the manual lever while rolling slowly"],
-      ["k11", "License plate, reflectors and lights clean and visible"]
+      ["k11", "License plate clean and visible"],
+      ["k19", "Reflectors clean and visible"]
     ]},
     { id: "vehicle", name: "Tow Vehicle", who: "outside", items: [
       ["v1", "Towing mirrors extended and adjusted"],
       ["v2", "Tow mode turned on"],
       ["v3", "Backup or trailer camera on", 1],
-      ["v4", "Route checked for low clearances and propane restrictions"],
+      ["v4", "Route checked for low clearances"],
+      ["v7", "Route checked for propane restrictions", 0, "Some tunnels and bridges don't allow propane."],
       ["v5", "Fuel or charge level checked"],
-      ["v6", "Passengers and pets buckled in"]
+      ["v6", "Passengers buckled in"],
+      ["v8", "Pets secured"]
     ]},
     { id: "kitchen", name: "Kitchen", who: "inside", items: [
-      ["c1", "Counter cleared and appliances unplugged and stowed"],
-      ["c2", "Stove burners off and cover down"],
-      ["c3", "Sink empty and dishes secured"],
+      ["c3", "Sink empty"],
+      ["c9", "Dishes secured"],
+      ["c1", "Counter cleared, including appliances unplugged and stowed"],
+      ["c2", "Stove burners off"],
+      ["c10", "Stove cover down"],
       ["c4", "Microwave glass tray removed or padded"],
-      ["c5", "Fridge set for travel, following your fridge's manual"],
-      ["c6", "Fridge and freezer doors latched"],
-      ["c7", "Pantry, cabinets and drawers latched"],
-      ["c8", "Kitchen windows closed and latched"]
+      ["c5", "Fridge set for travel (following your fridge's instruction manual)"],
+      ["c6", "Fridge door latched"],
+      ["c11", "Freezer door latched"],
+      ["c7", "Pantry latched"],
+      ["c12", "Kitchen cabinets latched"],
+      ["c13", "Kitchen drawers latched"],
+      ["c8", "Kitchen windows closed, latched, and shades drawn", 1]
     ]},
     { id: "bath", name: "Bathroom & Shower", who: "inside", items: [
-      ["b1", "Counter and shelf items put away"],
+      ["b1", "Counter cleared and shelf items stowed"],
+      ["b6", "Bathroom cabinets closed"],
+      ["b10", "Bathroom drawers closed"],
+      ["b5", "Toilet lid down"],
+      ["b7", "Bathroom window closed and latched"],
+      ["b8", "Bathroom fan off and roof vent closed"],
       ["b2", "Shower baskets and items stowed or set on the floor"],
       ["b3", "Shower head set on the shower floor"],
       ["b4", "Shower door closed and locked"],
-      ["b5", "Toilet lid down"],
-      ["b6", "Cabinets and drawers closed"],
-      ["b7", "Bathroom window closed and latched"],
-      ["b8", "Bathroom roof vent and fan closed"],
-      ["b9", "Shower roof vent closed"]
+      ["b9", "Shower fan off and roof vent closed"]
     ]},
     { id: "living", name: "Living Area & Dinette", who: "inside", items: [
-      ["l1", "Dinette, tables and shelves cleared"],
+      ["l1", "Dinette table cleared"],
+      ["l11", "Living area shelves cleared"],
       ["l7", "Table secured or lowered", 1],
       ["l2", "TV and mount locked and secured", 1],
-      ["l3", "Overhead lockers, cabinets and drawers latched"],
-      ["l5", "Loose decor and wall items stowed", 1],
+      ["l3", "Living area overhead lockers latched"],
+      ["l12", "Living area cabinets latched"],
+      ["l13", "Living area drawers latched"],
+      ["l5", "Loose decor stowed", 1],
+      ["l14", "Wall items stowed", 1],
       ["l6", "Loose chairs or stools secured"],
       ["l8", "Living area windows closed and latched"],
-      ["l9", "Living area roof vent, fan and skylight closed"],
+      ["l15", "Rubber window latches secured in front windows"],
+      ["l9", "Living area fan off and roof vent closed"],
+      ["l16", "Living area skylight closed", 1],
       ["l10", "Living area blinds and shades set for travel"]
     ]},
     { id: "bedroom", name: "Bedroom", who: "inside", items: [
-      ["r1", "Nightstands, shelves and bed cleared of loose items"],
+      ["r1", "Nightstands cleared"],
+      ["r8", "Bedroom shelves cleared"],
+      ["r9", "Bed cleared of loose items"],
       ["r7", "Nightstand USB switches turned off"],
       ["r2", "Bedroom TV and mount locked and secured", 1],
-      ["r3", "Wardrobe and closet doors latched"],
-      ["r4", "Overhead lockers and drawers latched"],
+      ["r3", "Wardrobe doors latched"],
+      ["r10", "Closet doors latched", 1],
+      ["r4", "Bedroom overhead lockers latched"],
+      ["r11", "Bedroom drawers latched"],
       ["l4", "Under-bed storage latched"],
       ["s1", "Bedroom windows closed and latched"],
       ["r5", "Bedroom area skylight closed"],
       ["r6", "Bedroom blinds and shades set for travel"]
     ]},
     { id: "systems", name: "Systems & Power", who: "inside", items: [
-      ["s5", "Air conditioner and furnace off"],
+      ["s5", "Air conditioner off"],
+      ["s13", "Furnace off"],
       ["s6", "Water pump off"],
       ["s7", "Water heater off"],
       ["s8", "Inverter off", 1],
@@ -732,9 +819,11 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     { id: "final", name: "Final Check", who: "both", items: [
       ["f1", "Quick walk-through inside: anything loose or open?"],
       ["f2", "Walk the whole outside of the trailer"],
-      ["f3", "Site check: nothing left behind (chocks, blocks, hoses, trash)"],
-      ["f4", "Keys, wallet and phones taken from the key rack"],
-      ["f5", "Main entry door latched, deadbolted and locked"]
+      ["f3", "Site check: nothing left behind (chocks, blocks, hoses, and trash)"],
+      ["f4", "Keys taken from the key rack"],
+      ["f6", "Wallets with you"],
+      ["f7", "Phones with you"],
+      ["f5", "Main entry door latched, deadbolted, and locked"]
     ]}
   ];
   var WHO_LABEL = { outside: "Outside", inside: "Inside", both: "Both" };
@@ -755,6 +844,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       checked: s.checked || {},
       hidden: s.hidden || {},
       custom: s.custom || [],
+      order: s.order || {},       // your own order: section id -> item ids, and "_sections" -> section ids
       closed: s.closed || {},
       trip: s.trip || 1,          // goes up by one each new travel day
       name: s.name || "",
@@ -800,6 +890,10 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
         if (op.trip <= s.trip) return false;
         s.trip = op.trip; s.checked = {}; s.name = op.name || "";
         return true;
+      case "order":
+        s.order = s.order || {};
+        if (op.ids.length) s.order[op.sec] = op.ids.slice(); else delete s.order[op.sec];
+        return true;
     }
     return false;
   }
@@ -821,8 +915,18 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     state.custom.forEach(function (c) {
       if (c.section === sec.id) list.push({ id: c.id, text: c.text, mine: true, tip: "" });
     });
-    return list;
+    return inOrder(list, state.order[sec.id]);
   }
+  // Things in your saved order first; anything added since (a new item, or one from an update) goes after them.
+  function inOrder(list, ids) {
+    if (!ids || !ids.length) return list;
+    var pos = {};
+    ids.forEach(function (id, i) { pos[id] = i; });
+    var known = list.filter(function (x) { return x.id in pos; }).sort(function (a, b) { return pos[a.id] - pos[b.id]; });
+    return known.concat(list.filter(function (x) { return !(x.id in pos); }));
+  }
+  function sectionList() { return inOrder(SECTIONS, state.order._sections); }
+  function sectionById(id) { return SECTIONS.filter(function (s) { return s.id === id; })[0]; }
   function sectionVisible(sec) {
     return state.role === "all" || sec.who === "both" || sec.who === state.role;
   }
@@ -852,7 +956,8 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
 
   function draw() {
     sectionsEl.textContent = "";
-    SECTIONS.forEach(function (sec) {
+    var visible = sectionList().filter(sectionVisible);
+    visible.forEach(function (sec, si) {
       if (!sectionVisible(sec)) return;
       var items = itemsFor(sec);
       var shown = editing ? items : items.filter(function (it) { return !state.hidden[it.id]; });
@@ -878,8 +983,16 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
       head.appendChild(meta);
       box.appendChild(head);
 
+      if (editing) {
+        var mv = el("div", "sec-move");
+        mv.appendChild(moveBtn("secup", "Move section up", sec.name, si === 0));
+        mv.appendChild(moveBtn("secdown", "Move section down", sec.name, si === visible.length - 1));
+        mv.appendChild(el("span", "small", "Move this section"));
+        box.appendChild(mv);
+      }
+
       var ul = el("ul", "items");
-      shown.forEach(function (it) {
+      shown.forEach(function (it, ii) {
         var li = el("li", "item");
         li.dataset.id = it.id;
         var hidden = !!state.hidden[it.id];
@@ -892,12 +1005,16 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
           if (it.mine) main.appendChild(el("span", "tag mine", "My item"));
           else if (it.equipped) main.appendChild(el("span", "tag", "If equipped"));
           r.appendChild(t);
+          var acts = el("div", "acts");
+          acts.appendChild(moveBtn("up", "Move up", it.text, ii === 0));
+          acts.appendChild(moveBtn("down", "Move down", it.text, ii === shown.length - 1));
           var b = el("button", "btn " + (it.mine ? "danger" : "quiet"));
           b.type = "button";
           b.dataset.act = it.mine ? "delete" : (hidden ? "show" : "hide");
           b.textContent = it.mine ? "Delete" : (hidden ? "Show" : "Hide");
           b.setAttribute("aria-label", b.textContent + ": " + it.text);
-          r.appendChild(b);
+          acts.appendChild(b);
+          r.appendChild(acts);
           li.appendChild(r);
         } else {
           if (state.checked[it.id]) li.classList.add("checked");
@@ -941,6 +1058,34 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     });
     updateCounts();
     renderControls();
+    if (document.body.dataset.page === "mine") renderMine();
+  }
+
+  var ARROW = { up: '<path d="m6 15 6-6 6 6"/>', down: '<path d="m6 9 6 6 6-6"/>' };
+  function moveBtn(act, label, what, off) {
+    var b = el("button", "btn quiet move");
+    b.type = "button";
+    b.dataset.act = act;
+    b.disabled = off;
+    b.setAttribute("aria-label", label + ": " + what);
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + ARROW[/up/.test(act) ? "up" : "down"] + "</svg>";
+    return b;
+  }
+  // Swap with the neighbor that's on screen (the filter can hide whole sections).
+  function moveItem(secId, id, step) {
+    var ids = itemsFor(sectionById(secId)).map(function (x) { return x.id; });
+    var i = ids.indexOf(id), j = i + step;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    ids[i] = ids[j]; ids[j] = id;
+    change({ t: "order", sec: secId, ids: ids });
+  }
+  function moveSection(secId, step) {
+    var all = sectionList(), ids = all.map(function (s) { return s.id; });
+    var i = ids.indexOf(secId), j = i + step;
+    while (j >= 0 && j < ids.length && !sectionVisible(all[j])) j += step;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    ids[i] = ids[j]; ids[j] = secId;
+    change({ t: "order", sec: "_sections", ids: ids });
   }
 
   function updateCounts() {
@@ -1000,6 +1145,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     document.getElementById("themeText").textContent = state.theme === "dark" ? "Light mode" : "Dark mode";
     document.getElementById("sizeText").textContent = "Text size: " + SIZES[state.size];
     document.getElementById("editBtn").hidden = editing;
+    document.getElementById("resetBtn").hidden = editing;
     document.getElementById("editNote").hidden = !editing;
     renderSync();
   }
@@ -1041,14 +1187,32 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     }
     var btn = e.target.closest("button[data-act]");
     if (!btn) return;
+    var act = btn.dataset.act;
+    var secId = btn.closest(".section").dataset.sec;
+    if (act === "secup" || act === "secdown") {
+      moveSection(secId, act === "secup" ? -1 : 1);
+      render();
+      var sec = sectionsEl.querySelector('[data-sec="' + secId + '"]');
+      if (sec) { refocus(sec.querySelector('.sec-move [data-act="' + act + '"]'), sec.querySelector(".sec-move .move")); sec.scrollIntoView({ block: "nearest" }); }
+      return;
+    }
     var itemId = btn.closest(".item").dataset.id;
-    if (btn.dataset.act === "hide") change({ t: "hide", id: itemId, v: true });
-    else if (btn.dataset.act === "show") change({ t: "hide", id: itemId, v: false });
-    else if (btn.dataset.act === "delete") change({ t: "del", id: itemId });
+    if (act === "hide") change({ t: "hide", id: itemId, v: true });
+    else if (act === "show") change({ t: "hide", id: itemId, v: false });
+    else if (act === "delete") change({ t: "del", id: itemId });
+    else if (act === "up" || act === "down") moveItem(secId, itemId, act === "up" ? -1 : 1);
     render();
-    var again = document.querySelector('.item[data-id="' + itemId + '"] button');
-    if (again) again.focus();
+    var row = sectionsEl.querySelector('.item[data-id="' + itemId + '"]');
+    if (row) {
+      refocus(row.querySelector('[data-act="' + act + '"]'), row.querySelector(".btn:not(.move)"));
+      if (act === "up" || act === "down") row.scrollIntoView({ block: "nearest" });
+    }
   });
+  // Keep the finger's place after a redraw; an arrow at the end of the list is turned off, so fall back to another button.
+  function refocus(b, fallback) {
+    if (b && !b.disabled) b.focus({ preventScroll: true });
+    else if (fallback) fallback.focus({ preventScroll: true });
+  }
 
   sectionsEl.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -1057,6 +1221,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     var text = inp.value.trim();
     if (!text) { inp.focus(); return; }
     var secId = form.dataset.sec;
+    inp.value = ""; // render() keeps typed text, and Done customizing adds whatever is still typed
     addCustom(secId, text);
     save();
     render();
@@ -1099,9 +1264,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     editing = false; render();
     document.getElementById("editBtn").focus();
   });
-  document.getElementById("showAll").addEventListener("click", function () {
-    change({ t: "showall" }); render();
-  });
+  document.getElementById("editMine").addEventListener("click", function () { openPage("mine"); });
 
   var resetConfirm = document.getElementById("resetConfirm");
   // Start a new travel day: from the Menu, or from the "All done" banner. Asks first, near the top of the list.
@@ -1114,7 +1277,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     scrollToEl(resetConfirm);
     document.getElementById("resetNo").focus({ preventScroll: true });
   }
-  document.getElementById("menuReset").addEventListener("click", askReset);
+  document.getElementById("resetBtn").addEventListener("click", askReset);
   document.getElementById("nextTripBtn").addEventListener("click", askReset);
   document.getElementById("resetNo").addEventListener("click", function () { resetConfirm.hidden = true; });
   document.getElementById("resetYes").addEventListener("click", function () {
@@ -1200,7 +1363,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   var sharePanel = document.getElementById("sharePanel");
   var shareMsg = document.getElementById("shareMsg");
   var joinCode = document.getElementById("joinCode");
-  var SHARED_KEYS = ["trip", "name", "checked", "hidden", "custom", "deleted"];
+  var SHARED_KEYS = ["trip", "name", "checked", "hidden", "custom", "deleted", "order"];
 
   function prettyCode(c) { return c.slice(0, 3) + "-" + c.slice(3); }
   function cleanCode(v) { return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
@@ -1293,6 +1456,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     if (m.t === "state" && m.s) {
       if (m.ack) state.pending = state.pending.filter(function (op) { return op.q > m.ack; });
       SHARED_KEYS.forEach(function (k) { state[k] = m.s[k]; });
+      state.order = state.order || {}; // lists shared before custom order existed
       state.pending.forEach(function (op) { applyOp(state, op); });
       sync.phones = m.n || sync.phones;
       save();
@@ -1360,6 +1524,7 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
   function openShare(mode) {
     shareMode = mode || "main";
     say("");
+    leavePage();
     sharePanel.hidden = false;
     renderSync();
     setMenu(false);
@@ -1539,20 +1704,122 @@ details.card .g-item ol { margin: 0; padding-left: 1.3em; gap: 6px; }
     var bar = document.querySelector(".progress").offsetHeight;
     window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - bar - 12, behavior: "smooth" });
   }
-  // The guide and home screen steps only show when opened from the Menu; folding one away hides it again.
-  function showCard(d) {
-    d.hidden = false;
-    d.open = true;
-    goTo(d);
+  // Pages: How to use this, home screen steps, and My custom and hidden items each open on their own screen.
+  // They use the address bar (#guide, #home, #mine), so the phone's back gesture returns to the checklist.
+  var PAGES = ["guide", "home", "mine"];
+  var listScroll = 0;
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  function pageFromHash() {
+    var h = location.hash.slice(1);
+    return PAGES.indexOf(h) >= 0 ? h : "";
   }
-  ["guide", "homeHelp"].forEach(function (id) {
-    var d = document.getElementById(id);
-    d.addEventListener("toggle", function () { if (!d.open) d.hidden = true; });
-  });
-  document.getElementById("menuHome").addEventListener("click", function () { showCard(document.getElementById("homeHelp")); });
-  function openGuide() { showCard(document.getElementById("guide")); }
+  function showPage(name) {
+    var was = document.body.dataset.page || "";
+    if (was === name) return;
+    if (!was) listScroll = window.pageYOffset;
+    PAGES.forEach(function (p) { document.getElementById("page-" + p).hidden = p !== name; });
+    document.body.classList.toggle("page-open", !!name);
+    document.body.dataset.page = name;
+    if (name === "mine") renderMine();
+    if (name) {
+      window.scrollTo(0, 0);
+      document.getElementById(name + "Title").focus({ preventScroll: true });
+    } else window.scrollTo(0, listScroll);
+  }
+  function openPage(name) {
+    setMenu(false);
+    if (document.body.dataset.page === name) { window.scrollTo(0, 0); return; }
+    try { history.pushState({ page: name }, "", "#" + name); } catch (e) {}
+    showPage(name);
+  }
+  function closePage() {
+    if (history.state && history.state.page) history.back();
+    else leavePage();
+  }
+  // Straight back to the checklist, without a trip through the phone's history.
+  function leavePage() {
+    if (!document.body.dataset.page) return;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    showPage("");
+  }
+  window.addEventListener("popstate", function () { showPage(pageFromHash()); });
+  Array.prototype.forEach.call(document.querySelectorAll(".page .back"), function (b) { b.addEventListener("click", closePage); });
+  document.getElementById("menuHome").addEventListener("click", function () { openPage("home"); });
+  function openGuide() { openPage("guide"); }
   document.getElementById("menuGuide").addEventListener("click", openGuide);
   document.getElementById("guideLink").addEventListener("click", openGuide);
+  document.getElementById("menuMine").addEventListener("click", function () { openPage("mine"); });
+  document.getElementById("mineEdit").addEventListener("click", function () {
+    leavePage();
+    if (!editing) { editing = true; render(); }
+    scrollToEl(document.getElementById("editNote"));
+    document.getElementById("editDone").focus({ preventScroll: true });
+  });
+
+  // My custom and hidden items: one list of every change, section by section, each with its undo.
+  var mineList = document.getElementById("mineList");
+  function renderMine() {
+    mineList.textContent = "";
+    var any = false;
+    function row(text, tag, act, id, label) {
+      var li = el("li", "mine-row");
+      var t = el("span", "main", text);
+      if (tag) t.appendChild(el("span", "tag" + (tag === "My item" ? " mine" : ""), tag));
+      li.appendChild(t);
+      var b = el("button", "btn " + (act === "delete" ? "danger" : "quiet"), label);
+      b.type = "button";
+      b.dataset.act = act;
+      b.dataset.id = id;
+      b.setAttribute("aria-label", label + ": " + text);
+      li.appendChild(b);
+      return li;
+    }
+    if (state.order._sections && state.order._sections.length) {
+      any = true;
+      var top = el("div", "mine-sec");
+      var ul0 = el("ul", "mine-items");
+      ul0.appendChild(row("Sections are in your own order", "", "resetorder", "_sections", "Put back"));
+      top.appendChild(ul0);
+      mineList.appendChild(top);
+    }
+    sectionList().forEach(function (sec) {
+      var items = itemsFor(sec);
+      var hidden = items.filter(function (it) { return !it.mine && state.hidden[it.id]; });
+      var mine = items.filter(function (it) { return it.mine; });
+      var moved = state.order[sec.id] && state.order[sec.id].length;
+      if (!hidden.length && !mine.length && !moved) return;
+      any = true;
+      var box = el("div", "mine-sec");
+      box.dataset.sec = sec.id;
+      box.appendChild(el("h3", "", sec.name));
+      var ul = el("ul", "mine-items");
+      mine.forEach(function (it) { ul.appendChild(row(it.text, state.hidden[it.id] ? "Hidden" : "My item", "delete", it.id, "Delete")); });
+      hidden.forEach(function (it) { ul.appendChild(row(it.text, "Hidden", "show", it.id, "Show")); });
+      if (moved) ul.appendChild(row("Items are in your own order", "", "resetorder", sec.id, "Put back"));
+      box.appendChild(ul);
+      mineList.appendChild(box);
+    });
+    if (!any) {
+      mineList.appendChild(el("p", "mine-empty", "Nothing yet. Tap Customize the checklist to hide items your trailer doesn't have, add your own, or change the order."));
+    } else if (Object.keys(state.hidden).length) {
+      var all = el("button", "btn quiet", "Show all hidden items");
+      all.type = "button";
+      all.dataset.act = "showall";
+      mineList.appendChild(all);
+    }
+  }
+  mineList.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-act]");
+    if (!b) return;
+    var act = b.dataset.act, id = b.dataset.id;
+    if (act === "show") change({ t: "hide", id: id, v: false });
+    else if (act === "delete") change({ t: "del", id: id });
+    else if (act === "resetorder") change({ t: "order", sec: id, ids: [] });
+    else if (act === "showall") change({ t: "showall" });
+    render();
+    document.getElementById("mineTitle").focus({ preventScroll: true });
+  });
+  showPage(pageFromHash());
   document.getElementById("menuTip").addEventListener("click", function () {
     goTo(document.getElementById("tipTitle"));
   });
