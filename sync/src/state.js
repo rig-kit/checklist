@@ -1,10 +1,10 @@
 // The shared list for one trailer, and how each change applies to it.
 // src/app.html carries a copy of applyOp (search "keep in step with sync/src/state.js"); change both together.
 
-export const LIMITS = { custom: 100, text: 120, name: 60, deleted: 1000, phones: 8, ops: 200, message: 32768 };
+export const LIMITS = { custom: 100, text: 120, name: 60, deleted: 1000, phones: 8, ops: 200, message: 32768, orders: 40, orderIds: 250 };
 
 export function emptyState() {
-  return { trip: 1, name: "", checked: {}, hidden: {}, custom: [], deleted: {} };
+  return { trip: 1, name: "", checked: {}, hidden: {}, custom: [], deleted: {}, order: {} };
 }
 
 // Last change to reach the server wins, item by item. Returns true if the list changed.
@@ -37,6 +37,10 @@ export function applyOp(s, op) {
       if (op.trip <= s.trip) return false; // the other phone already started it
       s.trip = op.trip; s.checked = {}; s.name = op.name || "";
       return true;
+    case "order": // your own order for one section's items, or for the sections ("_sections"); no ids puts it back
+      s.order = s.order || {}; // lists shared before custom order existed
+      if (op.ids.length) s.order[op.sec] = op.ids.slice(); else delete s.order[op.sec];
+      return true;
   }
   return false;
 }
@@ -56,6 +60,7 @@ export function validOp(op) {
     case "del": return ID.test(op.id);
     case "name": return str(op.v, LIMITS.name) && trip(op.trip);
     case "trip": return trip(op.trip) && (op.name == null || str(op.name, LIMITS.name));
+    case "order": return ID.test(op.sec) && Array.isArray(op.ids) && op.ids.length <= LIMITS.orderIds && op.ids.every(id => typeof id === "string" && ID.test(id));
   }
   return false;
 }
@@ -66,6 +71,10 @@ export function applyChecked(s, op) {
   if (op.t === "add") {
     if (s.custom.length >= LIMITS.custom) return false;
     op = { t: "add", item: { id: op.item.id, section: op.item.section, text: op.item.text.trim() } };
+  }
+  if (op.t === "order") {
+    if (op.ids.length && !(s.order && op.sec in s.order) && Object.keys(s.order || {}).length >= LIMITS.orders) return false;
+    op = { t: "order", sec: op.sec, ids: op.ids };
   }
   const changed = applyOp(s, op);
   if (Object.keys(s.deleted).length > LIMITS.deleted) s.deleted = {};
@@ -85,6 +94,9 @@ export function cleanState(input) {
   }
   if (Array.isArray(input.custom)) {
     for (const item of input.custom.slice(0, LIMITS.custom)) applyChecked(s, { t: "add", item });
+  }
+  if (input.order && typeof input.order === "object" && !Array.isArray(input.order)) {
+    for (const sec of Object.keys(input.order).slice(0, LIMITS.orders)) applyChecked(s, { t: "order", sec, ids: input.order[sec] });
   }
   return s;
 }
