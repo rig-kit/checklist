@@ -223,6 +223,16 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .who { font-family: var(--font-display); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .8em; }
 
 .items { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.items:empty { display: none; }
+/* Completed: checked items gather here, each with a pill for the section it came from */
+.done-sec { border-color: var(--done); }
+.done-sec .sec-head { background: var(--done-soft); }
+.done-sec .sec-count { color: var(--done); }
+.done-sec .sec-meta { font-size: .85em; }
+.from-pill { justify-self: start; font-size: .75em; font-weight: 700; padding: 1px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.from-pill[data-who="outside"] { background: var(--out-soft); color: var(--out-ink); }
+.from-pill[data-who="inside"] { background: var(--in-soft); color: var(--in-ink); }
+.from-pill[data-who="both"] { background: var(--both-soft); color: var(--both-ink); }
 .item { border-bottom: 1px solid var(--line); }
 .item:last-child { border-bottom: 0; }
 .row { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 14px 16px; cursor: pointer; min-height: 64px; }
@@ -238,6 +248,10 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .text { min-width: 0; display: grid; gap: 4px; }
 .item.checked { background: var(--done-soft); }
 .item.checked .main { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 2px; }
+.item { transition: background .2s; }
+.item.checked .main, .item.checked .box { transition: color .2s, opacity .2s; }
+.done-sec .item.checked { background: none; }
+.done-sec .item.checked .main { opacity: .8; }
 .tip { color: var(--muted); font-size: .85em; }
 .tag { display: inline-block; font-size: .72em; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); vertical-align: 2px; margin-left: 4px; white-space: nowrap; }
 .tag.mine { background: var(--caution-soft); color: var(--caution); }
@@ -528,7 +542,8 @@ body.page-open .sections, body.page-open .alldone { display: none; }
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.5 3 3 5-6"/></svg></span>
           <div>
             <h3>Check things off</h3>
-            <p>Tap an item when it's done. Tap it again to uncheck it.</p>
+            <p>Tap an item when it's done. After a moment it moves to <b class="ui">Completed</b> at the bottom, so the list keeps getting shorter.</p>
+            <p>Checked one by mistake? Tap it in Completed and it goes back.</p>
             <p>Tap a section's title to fold it away.</p>
           </div>
         </div>
@@ -971,14 +986,22 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     }
   }
 
+  // Like iPhone Reminders: a checked item stays put for a moment, then moves to Completed at the bottom.
+  var SETTLE_MS = 2000;
+  var settling = {}; // item id -> timer, for items just checked on this phone
+
   function draw() {
     sectionsEl.textContent = "";
     var visible = sectionList().filter(sectionVisible);
+    var completed = [];
     visible.forEach(function (sec, si) {
-      if (!sectionVisible(sec)) return;
       var items = itemsFor(sec);
-      var shown = editing ? items : items.filter(function (it) { return !state.hidden[it.id]; });
-      if (!shown.length && !editing) return;
+      var listed = editing ? items : items.filter(function (it) { return !state.hidden[it.id]; });
+      if (!listed.length && !editing) return;
+      var shown = editing ? listed : listed.filter(function (it) {
+        if (state.checked[it.id] && !settling[it.id]) { completed.push({ it: it, sec: sec }); return false; }
+        return true;
+      });
 
       var box = el("section", "section");
       box.dataset.sec = sec.id;
@@ -1034,22 +1057,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
           r.appendChild(acts);
           li.appendChild(r);
         } else {
-          if (state.checked[it.id]) li.classList.add("checked");
-          var label = el("label", "row");
-          var cb = document.createElement("input");
-          cb.type = "checkbox";
-          cb.id = "cb-" + it.id;
-          cb.checked = !!state.checked[it.id];
-          label.appendChild(cb);
-          label.appendChild(el("span", "box"));
-          var tx = el("span", "text");
-          var mn = el("span", "main", it.text);
-          if (it.mine) mn.appendChild(el("span", "tag mine", "My item"));
-          else if (it.equipped) mn.appendChild(el("span", "tag", "If equipped"));
-          tx.appendChild(mn);
-          if (it.tip) tx.appendChild(el("span", "tip", it.tip));
-          label.appendChild(tx);
-          li.appendChild(label);
+          li = checkRow(it);
         }
         ul.appendChild(li);
       });
@@ -1073,9 +1081,71 @@ body.page-open .sections, body.page-open .alldone { display: none; }
       }
       sectionsEl.appendChild(box);
     });
+    if (completed.length) sectionsEl.appendChild(completedBox(completed));
     updateCounts();
     renderControls();
     if (document.body.dataset.page === "mine") renderMine();
+  }
+
+  function checkRow(it, from) {
+    var li = el("li", "item");
+    li.dataset.id = it.id;
+    if (state.checked[it.id]) li.classList.add("checked");
+    var label = el("label", "row");
+    var cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = "cb-" + it.id;
+    cb.checked = !!state.checked[it.id];
+    label.appendChild(cb);
+    label.appendChild(el("span", "box"));
+    var tx = el("span", "text");
+    var mn = el("span", "main", it.text);
+    if (it.mine) mn.appendChild(el("span", "tag mine", "My item"));
+    else if (it.equipped) mn.appendChild(el("span", "tag", "If equipped"));
+    tx.appendChild(mn);
+    if (from) tx.appendChild(el("span", "from-pill", from.name)).dataset.who = from.who;
+    else if (it.tip) tx.appendChild(el("span", "tip", it.tip));
+    label.appendChild(tx);
+    li.appendChild(label);
+    return li;
+  }
+  // Everything checked, in checklist order, each with a pill naming the section it came from.
+  function completedBox(list) {
+    var box = el("section", "section done-sec");
+    box.dataset.sec = "_done";
+    if (state.closed._done) box.classList.add("closed");
+    var head = el("button", "sec-head");
+    head.type = "button";
+    head.id = "head-_done";
+    head.setAttribute("aria-expanded", state.closed._done ? "false" : "true");
+    head.appendChild(el("span", "sec-title", "Completed"));
+    var count = el("span", "sec-count");
+    count.appendChild(el("span", "", String(list.length)));
+    count.appendChild(el("span", "chev"));
+    head.appendChild(count);
+    head.appendChild(el("span", "sec-meta", "Tap an item to put it back"));
+    box.appendChild(head);
+    var ul = el("ul", "items");
+    list.forEach(function (x) { ul.appendChild(checkRow(x.it, x.sec)); });
+    box.appendChild(ul);
+    return box;
+  }
+  // Redraw without the page jumping when rows above the screen move away (iPhone Safari doesn't do this on its own).
+  function renderKeepingPlace() {
+    var top = document.querySelector(".progress").getBoundingClientRect().bottom;
+    var rows = sectionsEl.querySelectorAll(".item, .sec-head"), anchor = null, key = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      if (r.getBoundingClientRect().top < top) continue;
+      if (r.classList.contains("item") && (r.classList.contains("checked") || r.closest('[data-sec="_done"]'))) continue; // about to move
+      anchor = r;
+      key = r.classList.contains("item") ? '.item[data-id="' + r.dataset.id + '"]' : "#" + r.id;
+      break;
+    }
+    var before = anchor && anchor.getBoundingClientRect().top;
+    render();
+    var after = key && sectionsEl.querySelector(key);
+    if (after) window.scrollBy(0, after.getBoundingClientRect().top - before);
   }
 
   var ARROW = { up: '<path d="m6 15 6-6 6 6"/>', down: '<path d="m6 9 6 6 6-6"/>' };
@@ -1187,7 +1257,14 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     var id = li.dataset.id;
     change({ t: "check", id: id, v: cb.checked, trip: state.trip });
     li.classList.toggle("checked", cb.checked);
-    updateCounts();
+    clearTimeout(settling[id]);
+    delete settling[id];
+    if (cb.checked) {
+      settling[id] = setTimeout(function () { delete settling[id]; renderKeepingPlace(); }, SETTLE_MS);
+      updateCounts();
+    } else if (li.closest('[data-sec="_done"]')) {
+      renderKeepingPlace(); // back to its own section right away
+    } else updateCounts();
     keepAwake();
   });
 
