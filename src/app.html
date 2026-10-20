@@ -236,6 +236,9 @@ body.is-welcome .progress, body.is-welcome .panel, body.is-welcome .sections, bo
 .item { transition: background .2s; }
 .item.checked .main, .item.checked .box { transition: color .2s, opacity .2s; }
 .done-sec .item.checked { background: none; }
+.item.leaving { opacity: 0; height: 0 !important; overflow: hidden; border-bottom-width: 0; transition: opacity .25s ease, height .3s ease .15s, border-width .3s ease .15s; }
+.item.arriving { animation: arrive .5s ease-out; }
+@keyframes arrive { from { opacity: 0; transform: translateY(-8px); } }
 .done-sec .item.checked .main { opacity: .8; }
 .tip { color: var(--muted); font-size: .85em; }
 .tag { display: inline-block; font-size: .72em; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); vertical-align: 2px; margin-left: 4px; white-space: nowrap; }
@@ -1070,9 +1073,32 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     if (document.body.dataset.page === "mine") renderMine();
   }
 
+  // The checked row fades and folds away, then fades in under Completed.
+  var FADE_MS = 450;
+  var arriving = {};
+  function fadeToCompleted(id) {
+    var li = sectionsEl.querySelector('.section:not([data-sec="_done"]) .item[data-id="' + id + '"]');
+    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var top = document.querySelector(".progress").getBoundingClientRect().bottom;
+    // A row already scrolled past moves without folding, so the screen doesn't creep.
+    if (!li || still || li.getBoundingClientRect().bottom < top) { finish(); return; }
+    li.style.height = li.offsetHeight + "px";
+    li.offsetHeight; // start the fold from the row's real height
+    li.classList.add("leaving");
+    setTimeout(finish, FADE_MS);
+    function finish() {
+      delete settling[id];
+      if (!state.checked[id]) { render(); return; } // unchecked while fading
+      if (!still) arriving[id] = true;
+      renderKeepingPlace();
+      arriving = {};
+    }
+  }
+
   function checkRow(it, from) {
     var li = el("li", "item");
     li.dataset.id = it.id;
+    if (from && arriving[it.id]) li.classList.add("arriving");
     if (state.checked[it.id]) li.classList.add("checked");
     var label = el("label", "row");
     var cb = document.createElement("input");
@@ -1243,7 +1269,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     clearTimeout(settling[id]);
     delete settling[id];
     if (cb.checked) {
-      settling[id] = setTimeout(function () { delete settling[id]; renderKeepingPlace(); }, SETTLE_MS);
+      settling[id] = setTimeout(function () { fadeToCompleted(id); }, SETTLE_MS);
       updateCounts();
     } else if (li.closest('[data-sec="_done"]')) {
       renderKeepingPlace(); // back to its own section right away
