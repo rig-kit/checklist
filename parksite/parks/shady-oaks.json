@@ -1,0 +1,45 @@
+{
+  "slug": "shady-oaks",
+  "name": "Shady Oaks RV Resort",
+  "tagline": "Come spend time with us.",
+  "lede": "Pull-through and back-in spots for every kind of RV traveler, a short drive from the charming town of Wimberley. Pet friendly, with a laundromat on the grounds.",
+  "region": "Wimberley, Texas",
+  "address": { "street": "5651 Ranch to Market Road 2325", "city": "Wimberley", "state": "TX", "zip": "78676" },
+  "phone": "(512) 847-1960",
+  "email": "dvshadyoaks1@yahoo.com",
+  "hours": "Tuesday to Saturday, 9 am to 5 pm",
+  "booking_url": null,
+  "booking_system": null,
+  "current_site": "https://www.shady-oaks-rv-resort.com/",
+  "photos": [
+    { "url": "https://files.cdn-files-a.com/uploads/9808903/2000_67083e6d24dfc.jpg", "alt": "Paved loop road winding between shaded RV sites under live oaks", "caption": "Roads wind through the oaks" },
+    { "url": "https://files.cdn-files-a.com/uploads/9808903/2000_67082ecba46f0.jpg", "alt": "Gravel RV sites with timber borders under large oak trees", "caption": "Shaded gravel sites" },
+    { "url": "https://files.cdn-files-a.com/uploads/9808903/2000_67082a8bc7a8e.jpg", "alt": "The office and park sign: pull-thru and back-in sites, full hookups, 30 and 50 amp, laundromat on site", "caption": "The office at the front gate" }
+  ],
+  "chips": [
+    "Pull-through and back-in",
+    "Full hookups, 30 and 50 amp",
+    "Pet friendly",
+    "Laundromat on site"
+  ],
+  "rates": { "nightly": null, "weekly": null, "monthly": null, "monthly_min_nights": null, "electric": null, "notes": null },
+  "sites": [
+    { "name": "Pull-through sites", "surface": null, "length_ft": null, "width_ft": null, "amps": "30 and 50", "hookups": "Full" },
+    { "name": "Back-in sites", "surface": null, "length_ft": null, "width_ft": null, "amps": "30 and 50", "hookups": "Full" }
+  ],
+  "rules": {
+    "max_rig_length": null,
+    "age_rule": null,
+    "big_rig_access": null,
+    "open_sky": null,
+    "pets": "Pet friendly",
+    "quiet_hours": null,
+    "check_in": null
+  },
+  "amenities": ["Laundromat on site"],
+  "source_notes": [
+    "Pull-through and back-in, pet friendly, laundromat, address, phone, email and hours: park's own website (Oct 21, 2026).",
+    "Full hookups, 30 and 50 amp, ZIP code: printed on the park sign in the park's own photo of the office.",
+    "Rates: the park's website says to contact them for pricing."
+  ]
+}
