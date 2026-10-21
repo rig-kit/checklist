@@ -75,3 +75,42 @@ test("retiring a code tells the other phone and forgets the list", opts, async (
   const after = await fetch(BASE + "/rooms/" + code, { headers: { Origin: ORIGIN } });
   assert.equal(after.status, 404);
 });
+
+test("usage stats need the owner's key", opts, async () => {
+  const page = await fetch(BASE + "/stats");
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get("x-robots-tag"), "noindex");
+  const noKey = await fetch(BASE + "/stats/data");
+  assert.equal(noKey.status, 401);
+  const wrong = await fetch(BASE + "/stats/data", { headers: { "X-Stats-Key": "WRONG-KEY" } });
+  assert.equal(wrong.status, 401);
+  const bad = await fetch(BASE + "/hit", { method: "POST", headers: { Origin: ORIGIN }, body: JSON.stringify({ e: "nope" }) });
+  assert.equal(bad.status, 400);
+  const otherSite = await fetch(BASE + "/hit", { method: "POST", headers: { Origin: "https://example.com" }, body: JSON.stringify({ e: "open" }) });
+  assert.equal(otherSite.status, 403);
+});
+
+// Only against a local dev server, so test runs never add to the live counts.
+const KEY = process.env.SYNC_TEST_STATS_KEY;
+test("counts add up per day", { skip: up && !process.env.SYNC_TEST_URL && KEY ? false : "local dev server and SYNC_TEST_STATS_KEY only" }, async () => {
+  const read = async () => {
+    const r = await fetch(BASE + "/stats/data", { headers: { "X-Stats-Key": KEY } });
+    assert.equal(r.status, 200);
+    const day = new Date().toISOString().slice(0, 10);
+    const out = {};
+    for (const row of (await r.json()).rows) if (row.day === day) out[row.name] = row.n;
+    return out;
+  };
+  const before = await read();
+  const hit = body => fetch(BASE + "/hit", { method: "POST", headers: { Origin: ORIGIN }, body: JSON.stringify(body) });
+  assert.equal((await hit({ e: "open", new: true, day: true, month: true })).status, 200);
+  assert.equal((await hit({ e: "open", new: false, day: false, month: false })).status, 200);
+  await hit({ e: "share" });
+  const after = await read();
+  const diff = k => (after[k] || 0) - (before[k] || 0);
+  assert.equal(diff("open"), 2);
+  assert.equal(diff("phone"), 1);
+  assert.equal(diff("dayPhone"), 1);
+  assert.equal(diff("monthPhone"), 1);
+  assert.equal(diff("share"), 1);
+});
