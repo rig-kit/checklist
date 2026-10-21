@@ -37,8 +37,8 @@ function missingWhy(r) {
   if (!anyRate) why.push("no rates listed");
   else if (!has(r.weekly) && !has(r.monthly)) why.push("no weekly or monthly rates");
   if (!has(r.site_length_ft) && !has(r.pad_surface)) why.push("no site length or pad surface");
-  else if (!has(r.site_length_ft)) why.push("no site length");
   const major = why.length;
+  if (has(r.pad_surface) && !has(r.site_length_ft)) why.push("no site length");
   if (!has(r.full_hookups) && !has(r.amps)) why.push("no hookup details");
   if (!has(r.pets)) why.push("no pet policy");
   if (!has(r.office_checkin)) why.push("no office hours or check-in times");
@@ -85,8 +85,8 @@ export function findLeads(records, state, plan, now = new Date()) {
     if (out[r.id]) {
       const l = out[r.id];
       l.name = clean(r.name, 120);
-      const url = (r.url_read || [])[0];
-      l.website = typeof url === "string" && /^https?:\/\//.test(url) ? url.split(/[?#]/)[0].slice(0, 300) : null;
+      const url = String((r.url_read || [])[0] || "").match(/https?:\/\/[^\s"'<>()]+/);
+      l.website = url ? url[0].split(/[?#]/)[0].slice(0, 300) : null;
       l.phone = clean(r.phone, 40);
       l.email = clean(r.email, 120);
     }
@@ -95,13 +95,15 @@ export function findLeads(records, state, plan, now = new Date()) {
 }
 
 // Folds a new sighting into what we already had for that park: newest reasons win, every plan is kept once.
+// Scanning the same plan again replaces what that plan said.
 export function mergeLead(old, add) {
   if (!old) return { ...add, status: "new", note: "", first: add.seen[0].date, last: add.seen[0].date };
+  const again = old.seen.some(s => s.plan_id === add.seen[0].plan_id);
   const seen = [...old.seen.filter(s => !add.seen.some(a => a.plan_id === s.plan_id && a.stop === s.stop)), ...add.seen].slice(-20);
   return {
     ...old,
     name: add.name || old.name, website: add.website || old.website, phone: add.phone || old.phone, email: add.email || old.email,
-    reasons: { ...old.reasons, ...add.reasons },
-    seen, last: add.seen[0].date,
+    reasons: again ? add.reasons : { ...old.reasons, ...add.reasons },
+    seen, last: again ? old.last : add.seen[0].date,
   };
 }

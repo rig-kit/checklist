@@ -238,7 +238,7 @@ export class Order extends DurableObject {
     try {
       const got = await outputs(client(this.env), o.session_id, ["records.json", "run-state.json"]);
       const leads = findLeads(got["records.json"], got["run-state.json"], { id: o.id, trip: o.order && o.order.trip_name });
-      await this.env.LEADS.get(this.env.LEADS.idFromName("leads")).add(leads);
+      await this.env.LEADS.get(this.env.LEADS.idFromName("leads")).add(leads, o.id);
       return { leads: leads.length };
     } catch (err) {
       return { error: String(err && err.message || err).slice(0, 200) };
@@ -329,7 +329,12 @@ export class Interview extends DurableObject {
 
 // Every park lead, one stored record per Google place ID (plus what the parks' own sites said).
 export class Leads extends DurableObject {
-  async add(leads) {
+  async add(leads, planId) {
+    const now = new Set(leads.map(l => l.place_id));
+    for (const [k, old] of await this.ctx.storage.list({ prefix: "lead:" })) {
+      // A rescan of a plan drops parks that plan no longer flags, unless another plan or a note keeps them.
+      if (!now.has(old.place_id) && old.seen.every(s => s.plan_id === planId) && old.status === "new" && !old.note) await this.ctx.storage.delete(k);
+    }
     for (const l of leads) {
       const k = `lead:${l.place_id}`;
       await this.ctx.storage.put(k, mergeLead(await this.ctx.storage.get(k), l));

@@ -13,7 +13,7 @@ const records = {
   ChIJnorates003: { ...base, name: "Quiet Creek", nightly: null, weekly: null, monthly: null, site_length_ft: null, pad_surface: null },
   ChIJblocked004: { ...base, status: "cant_read", site_problem: "robots_blocked", site_signals: null },
   ChIJfbonly0005: { ...base, status: "cant_read", site_problem: "listing_only", site_signals: null },
-  ChIJsmallgap06: { ...base, name: "Small Gap", pets: null },
+  ChIJsmallgap06: { ...base, name: "Small Gap", pets: null, site_length_ft: null, url_read: ["https://gap.example/ (loaded as https://x)"] },
 };
 const state = { stops: { Wimberley: { kept: ["ChIJmodern0001", "ChIJnosite0007"], cut: { ChIJfbonly0005: "only listed on a link-only site, can't read" },
   no_website: ["ChIJnosite0007"], listing_only: ["ChIJfbonly0005"] } } };
@@ -45,4 +45,6 @@ test("works with records as a list and merges sightings across plans", () => {
   assert.equal(b.last, "2026-11-01");
   assert.deepEqual(b.reasons.missing_info, ["no weekly or monthly rates", "no site length or pad surface"]);
   assert.deepEqual(mergeLead(b, again).seen.length, 2);
+  const rescan = mergeLead(b, { ...again, reasons: { dated: ["x"] } });
+  assert.deepEqual(rescan.reasons, { dated: ["x"] });
 });
