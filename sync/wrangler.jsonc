@@ -7,13 +7,19 @@
   "durable_objects": {
     "bindings": [
       { "name": "ROOMS", "class_name": "Room" },
-      { "name": "LIMITER", "class_name": "Limiter" }
+      { "name": "LIMITER", "class_name": "Limiter" },
+      { "name": "STATS", "class_name": "Stats" }
     ]
   },
   // SQLite-backed objects are the kind the free plan allows.
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room", "Limiter"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Room", "Limiter"] },
+    { "tag": "v2", "new_sqlite_classes": ["Stats"] }
+  ],
   "vars": {
     // Sites allowed to use this service (comma-separated).
-    "ALLOWED_ORIGINS": "https://rig-kit.github.io"
+    "ALLOWED_ORIGINS": "https://rig-kit.github.io",
+    // SHA-256 of the owner's key for the private /stats page. The key itself is not in this repository.
+    "STATS_KEY_HASH": "588040aa434a40c55c425c7c0bf6ce550e291d574bc141871e5535e12147d4e6"
   }
 }

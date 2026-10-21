@@ -3,12 +3,14 @@
 // whole (small) list back to every phone. No accounts, names or emails are stored.
 import { DurableObject } from "cloudflare:workers";
 import { LIMITS, applyChecked, cleanState } from "./state.js";
+import { countersFor, keyOk } from "./stats.js";
+import { STATS_PAGE } from "./stats-page.js";
 
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O, 1/I/L
 const CODE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/;
 const YEAR = 365 * 24 * 3600 * 1000;
 const HOUR = 3600 * 1000;
-const RATE = { create: 10, miss: 20 }; // per IP per hour: new trailers, wrong codes
+const RATE = { create: 10, miss: 20, hit: 60 }; // per IP per hour: new trailers, wrong codes or keys, usage counts
 
 function newCode() {
   const bytes = crypto.getRandomValues(new Uint8Array(6));
@@ -38,10 +40,38 @@ export default {
         "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", "Vary": "Origin" } });
     }
     if (url.pathname === "/") return new Response("Travel Day Checklist sync service\n");
-    if (!origin) return json({ error: "origin" }, 403, null);
 
     const ip = req.headers.get("CF-Connecting-IP") || "local";
     const limiter = env.LIMITER.get(env.LIMITER.idFromName(ip));
+    const stats = () => env.STATS.get(env.STATS.idFromName("all"));
+
+    // The owner's private usage page. The key stays in the page address after #, so only the page's own
+    // request below carries it, and wrong keys count against the same hourly cap as wrong codes.
+    if (url.pathname === "/stats" && req.method === "GET") {
+      return new Response(STATS_PAGE, { headers: {
+        "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex", "Referrer-Policy": "no-referrer" } });
+    }
+    if (url.pathname === "/stats/data" && req.method === "GET") {
+      if (await limiter.blocked("miss", RATE.miss)) return json({ error: "busy" }, 429, null);
+      if (!(await keyOk(req.headers.get("X-Stats-Key"), env.STATS_KEY_HASH))) {
+        await limiter.take("miss", Infinity);
+        return json({ error: "key" }, 401, null);
+      }
+      return json({ rows: await stats().rows() }, 200, null);
+    }
+
+    if (!origin) return json({ error: "origin" }, 403, null);
+
+    // Anonymous usage count from the app: one word, no ID (see stats.js).
+    if (url.pathname === "/hit" && req.method === "POST") {
+      const text = await req.text();
+      let names = null;
+      try { names = text.length < 200 && countersFor(JSON.parse(text)); } catch {}
+      if (!names) return json({ error: "bad" }, 400, origin);
+      if (await limiter.take("hit", RATE.hit)) await stats().add(names);
+      return json({ ok: true }, 200, origin);
+    }
 
     // Share a trailer: make a new code and store this phone's list under it.
     if (url.pathname === "/rooms" && req.method === "POST") {
@@ -170,6 +200,25 @@ export class Room extends DurableObject {
     if (!d) return;
     if (Date.now() - d.t >= YEAR) { await this.ctx.storage.deleteAll(); this.s = null; }
     else await this.ctx.storage.setAlarm(d.t + YEAR);
+  }
+}
+
+// Anonymous usage counts (see stats.js): one row per day per counter, e.g. ("2026-10-21", "open", 14).
+export class Stats extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS counts (day TEXT, name TEXT, n INTEGER, PRIMARY KEY (day, name))");
+  }
+
+  add(names) {
+    const day = new Date().toISOString().slice(0, 10);
+    for (const name of names) {
+      this.ctx.storage.sql.exec("INSERT INTO counts VALUES (?, ?, 1) ON CONFLICT (day, name) DO UPDATE SET n = n + 1", day, name);
+    }
+  }
+
+  rows() {
+    return this.ctx.storage.sql.exec("SELECT day, name, n FROM counts ORDER BY day").toArray();
   }
 }
 
