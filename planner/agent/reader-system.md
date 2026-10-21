@@ -21,6 +21,7 @@ internet (string: wifi, fiber, cable, or null), sky_shade (string: what the site
 office_checkin (string: office hours and check-in days, especially weekend check-in, or null),
 availability_note (string: winter availability, waitlists, "full", or how to book, or null),
 email (string or null), phone (string or null),
+booking_system (the booking software the park links to for reservations, from the link itself: "Firefly", "Campspot", "RoverPass", "Newbook", "RMS", another name, or null if the site has no booking link),
 online_booking (true if the site lets you book or request a site online, false if it only says call or email, null if unclear),
 site_signals (copy the SITE SIGNALS object from the park's home page exactly as printed, or null if you never got a page),
 site_problem ("no_website" | "listing_only" (the website field is a Facebook, Campendium or other listing page, not the park's own site) | "robots_blocked" | "fetch_error" | null),

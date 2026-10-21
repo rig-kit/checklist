@@ -81,6 +81,7 @@ function draw() {
       (phone ? '<a href="tel:' + esc(phone.replace(/[^0-9+]/g, "")) + '">' + esc(phone) + "</a>" : "") +
       (l.email ? '<a href="mailto:' + esc(l.email) + '">' + esc(l.email) + "</a>" : "") +
       (g.googleMapsUri ? '<a href="' + esc(g.googleMapsUri) + '" target="_blank" rel="noopener noreferrer">Google Maps</a>' : "") + "</div>" +
+      (l.booking_system ? '<div class="meta">Books through ' + esc(l.booking_system) + " (may offer its own website)</div>" : "") +
       '<div class="meta">Seen in ' + seen + "</div>" +
       '<div class="row"><select data-id="' + esc(l.place_id) + '" data-k="status">' +
       [["new", "New"], ["contacted", "Contacted"], ["interested", "Interested"], ["not_a_fit", "Not a fit"]].map(([v, t]) => '<option value="' + v + '"' + (l.status === v ? " selected" : "") + ">" + t + "</option>").join("") +

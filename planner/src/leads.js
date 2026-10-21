@@ -62,7 +62,7 @@ export function findLeads(records, state, plan, now = new Date()) {
     for (const id of [...(s.kept || []), ...Object.keys(s.cut || {})]) stopOf[id] ??= stop;
   }
   const lead = id => (out[id] ??= {
-    place_id: id, name: null, website: null, phone: null, email: null, reasons: {},
+    place_id: id, name: null, website: null, phone: null, email: null, booking_system: null, reasons: {},
     seen: [{ plan_id: plan.id, trip: clean(plan.trip, 80), stop: stopOf[id] || null, date: now.toISOString().slice(0, 10) }],
   });
   const add = (id, kind, why) => {
@@ -89,6 +89,7 @@ export function findLeads(records, state, plan, now = new Date()) {
       l.website = url ? url[0].split(/[?#]/)[0].slice(0, 300) : null;
       l.phone = clean(r.phone, 40);
       l.email = clean(r.email, 120);
+      l.booking_system = clean(r.booking_system, 40);
     }
   }
   return Object.values(out);
@@ -102,7 +103,7 @@ export function mergeLead(old, add) {
   const seen = [...old.seen.filter(s => !add.seen.some(a => a.plan_id === s.plan_id && a.stop === s.stop)), ...add.seen].slice(-20);
   return {
     ...old,
-    name: add.name || old.name, website: add.website || old.website, phone: add.phone || old.phone, email: add.email || old.email,
+    name: add.name || old.name, website: add.website || old.website, phone: add.phone || old.phone, email: add.email || old.email, booking_system: add.booking_system || old.booking_system,
     reasons: again ? add.reasons : { ...old.reasons, ...add.reasons },
     seen, last: again ? old.last : add.seen[0].date,
   };

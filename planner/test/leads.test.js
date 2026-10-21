@@ -8,7 +8,7 @@ const base = { status: "ok", url_read: ["https://oldpark.example/rates?x=1"], ni
   site_signals: { https: true, mobile_viewport: true, copyright_year: 2026, table_layout: false, frames_or_flash: false, generator: null } };
 const records = {
   ChIJmodern0001: { ...base, name: "Modern Park" },
-  ChIJoldsite002: { ...base, name: "Old Oaks RV", phone: "(830) 555-0100",
+  ChIJoldsite002: { ...base, name: "Old Oaks RV", phone: "(830) 555-0100", booking_system: "Campspot",
     site_signals: { https: false, mobile_viewport: false, copyright_year: 2011, table_layout: true, frames_or_flash: false, generator: "Microsoft FrontPage 4.0" } },
   ChIJnorates003: { ...base, name: "Quiet Creek", nightly: null, weekly: null, monthly: null, site_length_ft: null, pad_surface: null },
   ChIJblocked004: { ...base, status: "cant_read", site_problem: "robots_blocked", site_signals: null },
@@ -26,6 +26,7 @@ test("sorts parks into the three lead kinds and skips good or blocked sites", ()
   assert.match(old.reasons.dated.join(";"), /not set up for phones.*copyright says 2011.*https.*table.*FrontPage/);
   assert.equal(old.website, "https://oldpark.example/rates");
   assert.equal(old.phone, "(830) 555-0100");
+  assert.equal(old.booking_system, "Campspot");
   assert.deepEqual(old.seen, [{ plan_id: "p1", trip: "Texas", stop: null, date: "2026-10-21" }]);
   assert.deepEqual(leads.ChIJnorates003.reasons.missing_info, ["no rates listed", "no site length or pad surface"]);
   assert.ok(leads.ChIJnosite0007.reasons.no_site);
