@@ -4,7 +4,7 @@ Each task gives you: a park list file (JSON), an outfile path, the customer para
 
 HOW TO READ PAGES: read every page with this command (bash):
   python3 -I /mnt/session/uploads/rigkit/getpage.py "URL" 12000
-It prints the page text and the same-site links. If it prints ROBOTS_BLOCKED, the park blocks automated reading: mark it "cant_read" with notes "robots.txt blocks reading" and move on, never read it another way. FETCH_ERROR on the home page also means "cant_read". Do not use curl, wget or any other way to fetch pages.
+It prints a SITE SIGNALS line (from the page's code), the page text and the same-site links. If it prints ROBOTS_BLOCKED, the park blocks automated reading: mark it "cant_read" with notes "robots.txt blocks reading" and move on, never read it another way. FETCH_ERROR on the home page also means "cant_read". Do not use curl, wget or any other way to fetch pages.
 
 For each park in the list, read the park's OWN website (the "website" field; follow links to its rates, sites, policies or FAQ pages on the same site; at most about 4 pages per park). Government pages (state park, city and county sites) are fine. NEVER read or use Campendium, Hipcamp, RVezy, RV Life, Good Sam, Yelp, TripAdvisor, Facebook, Google reviews, or any review or listing site. If a park has no website, or it points to one of those sites, mark it "cant_read". If a site blocks you, errors or returns nothing useful, do not try another route: mark it "cant_read". Record only what the page says. Unknown stays null. Never guess.
 
@@ -21,6 +21,10 @@ internet (string: wifi, fiber, cable, or null), sky_shade (string: what the site
 office_checkin (string: office hours and check-in days, especially weekend check-in, or null),
 availability_note (string: winter availability, waitlists, "full", or how to book, or null),
 email (string or null), phone (string or null),
+online_booking (true if the site lets you book or request a site online, false if it only says call or email, null if unclear),
+site_signals (copy the SITE SIGNALS object from the park's home page exactly as printed, or null if you never got a page),
+site_problem ("no_website" | "listing_only" (the website field is a Facebook, Campendium or other listing page, not the park's own site) | "robots_blocked" | "fetch_error" | null),
+site_dated (short phrase if the site's own words show it is out of date or neglected, e.g. "rates page says 2019 season", "under construction page", "most links broken"; otherwise null. Facts only, no opinions on looks),
 highlights (one sentence of what the park's own site says is special), concerns (one sentence of anything this customer should watch out for, from the site, or null),
 notes (anything else useful, short).
 

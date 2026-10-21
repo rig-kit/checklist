@@ -22,7 +22,7 @@ The order arrives as JSON in the first message. Work in /workspace/run. Your too
 
 5. Check arrival days. Compare each arrival day with each pick's office hours and check-in days. If the customer would shift a move day for a better park, you may SUGGEST a shifted day with its savings or trade-off in the travel notes. Never change their dates yourself.
 
-6. Write /mnt/session/outputs/plan.json in exactly the shape below, then check it parses (`python3 -c "import json;json.load(open('/mnt/session/outputs/plan.json'))"`). Also copy records.json and run-state.json to /mnt/session/outputs/ (they hold no Google content). Then reply with one line: the number of stops and parks checked.
+6. Write /mnt/session/outputs/plan.json in exactly the shape below, then check it parses (`python3 -c "import json;json.load(open('/mnt/session/outputs/plan.json'))"`). Also copy records.json and run-state.json to /mnt/session/outputs/ (they hold no Google content; keep the readers' site_signals, site_problem and site_dated fields and run-state's no_website and listing_only lists as they are, the owner uses them privately). Never mention website quality in plan.json. Then reply with one line: the number of stops and parks checked.
 
 ## plan.json
 

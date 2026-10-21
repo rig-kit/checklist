@@ -208,7 +208,10 @@ def main(order_path, run_dir):
         found[key] = per
         kept = [pid for pid, p in per.items() if not p["_cut"]]
         state["stops"][key] = {"kept": kept, "to_check": [], "cut": {pid: p["_cut"] for pid, p in per.items() if p["_cut"]},
-                               "drive_time_estimated": est}
+                               "drive_time_estimated": est,
+                               # Place IDs only: parks with no website of their own, for the owner's private lead list.
+                               "no_website": [pid for pid in kept if not per[pid].get("websiteUri")],
+                               "listing_only": [pid for pid, p in per.items() if p["_cut"] and p["_cut"].startswith("only listed on a link-only")]}
         print(f"{key}: {len(per)} found, {len(kept)} kept, {calls['text_search'] - start} searches", file=sys.stderr)
 
     json.dump({"found": found, "log": log, "calls": calls}, open(os.path.join(run_dir, "discovery.json"), "w"), indent=1)

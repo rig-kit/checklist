@@ -7,7 +7,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { chatPage, statusPage, shell, e } from "./pages.js";
 import { turn, display, MAX_TURNS } from "./interview.js";
 import { renderPlan } from "./render.js";
-import { placeDetails, photoUrl, photoRedirect } from "./google.js";
+import { placeDetails, photoUrl, photoRedirect, BASIC_FIELDS } from "./google.js";
+import { findLeads, mergeLead } from "./leads.js";
+import { adminPage } from "./admin.js";
 import IDS from "./setup-ids.js";
 
 const MINUTE = 60 * 1000;
@@ -36,11 +38,67 @@ function sameText(a, b) {
 
 const client = env => new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
+async function sha256(s) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Only the SHA-256 of the owner's admin key is in the repository (ADMIN_KEY_HASH in wrangler.jsonc).
+async function adminOk(req, env) {
+  const key = (req.headers.get("X-Admin-Key") || "").trim().toUpperCase();
+  return !!key && key.length <= 100 && !!env.ADMIN_KEY_HASH && sameText(await sha256(key), env.ADMIN_KEY_HASH);
+}
+
+// The admin routes: /admin (page), /admin/leads (list), /admin/leads/<place id> (status and note),
+// /admin/rescan (collect leads again from an earlier plan).
+async function admin(req, env, url) {
+  if (url.pathname === "/admin" && req.method === "GET") return adminPage();
+  const ip = req.headers.get("CF-Connecting-IP") || "local";
+  const gate = env.GATE.get(env.GATE.idFromName("gate"));
+  if (!(await adminOk(req, env))) {
+    const more = await gate.take(`admin-miss:${ip}`, 20, 500, "admin-miss"); // wrong keys: 20 an hour per IP
+    return json({ error: more ? "key" : "Too many tries. Wait an hour." }, more ? 401 : 429);
+  }
+  if (!(await gate.take(`admin-ok:${ip}`, 300, 5000, "admin"))) return json({ error: "slow down" }, 429);
+  const book = env.LEADS.get(env.LEADS.idFromName("leads"));
+  if (url.pathname === "/admin/leads" && req.method === "GET") {
+    const leads = await book.list();
+    const shown = leads.slice(0, 150);
+    const google = await placeDetails(shown.map(l => l.place_id), env.GOOGLE_PLACES_API_KEY, BASIC_FIELDS);
+    return json({ leads: shown.map(l => ({ ...l, google: google[l.place_id] || null })), total: leads.length });
+  }
+  const one = url.pathname.match(/^\/admin\/leads\/([A-Za-z0-9_-]{10,300})$/);
+  if (one && req.method === "POST") {
+    let body;
+    try { body = await req.json(); } catch { return json({ error: "bad request" }, 400); }
+    return json(await book.mark(one[1], body));
+  }
+  if (url.pathname === "/admin/rescan" && req.method === "POST") {
+    let body;
+    try { body = await req.json(); } catch { return json({ error: "bad request" }, 400); }
+    if (!ORDER_ID.test(body.plan_id || "")) return json({ error: "plan_id" }, 400);
+    return json(await env.ORDERS.get(env.ORDERS.idFromName(body.plan_id)).collectLeads());
+  }
+  return json({ error: "not found" }, 404);
+}
+
+// Reads the named JSON files the agent left in /mnt/session/outputs/. Missing or broken files are left out.
+async function outputs(api, sessionId, names) {
+  const out = {};
+  for await (const f of api.beta.files.list({ scope_id: sessionId, betas: ["managed-agents-2026-04-01"] })) {
+    if (names.includes(f.filename) && !(f.filename in out)) {
+      try { out[f.filename] = JSON.parse(await (await api.beta.files.download(f.id)).text()); } catch {}
+    }
+  }
+  return out;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === "/" && req.method === "GET") return chatPage();
     if (url.pathname === "/photo") return photoRedirect(url, env.GOOGLE_PLACES_API_KEY);
+    if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) return admin(req, env, url);
 
     // The interview: /chat/<id> (GET restores it, POST takes the customer's next message), /chat/<id>/start.
     const c = url.pathname.match(/^\/chat\/([A-Za-z0-9]{20})(\/start)?$/);
@@ -159,12 +217,7 @@ export class Order extends DurableObject {
     // Finished (or terminated): keep plan.json if the agent wrote one.
     let plan = null;
     for (let tries = 0; tries < 3 && !plan; tries++) {
-      for await (const f of api.beta.files.list({ scope_id: o.session_id, betas: ["managed-agents-2026-04-01"] })) {
-        if (f.filename === "plan.json") {
-          try { plan = JSON.parse(await (await api.beta.files.download(f.id)).text()); } catch {}
-          break;
-        }
-      }
+      plan = (await outputs(api, o.session_id, ["plan.json"]))["plan.json"] || null;
       if (!plan) await new Promise(r => setTimeout(r, 3000)); // outputs can take a few seconds to appear
     }
     if (!plan || !Array.isArray(plan.stops)) return this.fail(o, "The planner finished without writing a plan.", api, false);
@@ -175,6 +228,21 @@ export class Order extends DurableObject {
     o.finished = Date.now();
     await this.save(o);
     await this.email(o);
+    await this.collectLeads();
+  }
+
+  // The owner's private website-redesign leads, from the files the agent already wrote. Never fails a plan.
+  async collectLeads() {
+    const o = await this.view();
+    if (!o || !o.session_id) return { error: "no plan here" };
+    try {
+      const got = await outputs(client(this.env), o.session_id, ["records.json", "run-state.json"]);
+      const leads = findLeads(got["records.json"], got["run-state.json"], { id: o.id, trip: o.order && o.order.trip_name });
+      await this.env.LEADS.get(this.env.LEADS.idFromName("leads")).add(leads);
+      return { leads: leads.length };
+    } catch (err) {
+      return { error: String(err && err.message || err).slice(0, 200) };
+    }
   }
 
   async fail(o, message, api, interrupt) {
@@ -256,6 +324,33 @@ export class Interview extends DurableObject {
     const i = await this.load();
     i.plan_id = planId;
     await this.ctx.storage.put("i", i);
+  }
+}
+
+// Every park lead, one stored record per Google place ID (plus what the parks' own sites said).
+export class Leads extends DurableObject {
+  async add(leads) {
+    for (const l of leads) {
+      const k = `lead:${l.place_id}`;
+      await this.ctx.storage.put(k, mergeLead(await this.ctx.storage.get(k), l));
+    }
+  }
+
+  async list() {
+    const all = [...(await this.ctx.storage.list({ prefix: "lead:" })).values()];
+    const score = l => Object.values(l.reasons).reduce((n, w) => n + w.length, 0) + (l.reasons.no_site ? 3 : 0) + l.seen.length;
+    const order = { interested: 0, new: 1, contacted: 2, not_a_fit: 3 };
+    return all.sort((a, b) => (order[a.status] ?? 1) - (order[b.status] ?? 1) || score(b) - score(a) || b.last.localeCompare(a.last));
+  }
+
+  async mark(id, patch) {
+    const k = `lead:${id}`;
+    const l = await this.ctx.storage.get(k);
+    if (!l) return { error: "not found" };
+    if (["new", "contacted", "interested", "not_a_fit"].includes(patch.status)) l.status = patch.status;
+    if (typeof patch.note === "string") l.note = patch.note.slice(0, 300);
+    await this.ctx.storage.put(k, l);
+    return { ok: true };
   }
 }
 

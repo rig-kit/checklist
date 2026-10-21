@@ -4,13 +4,16 @@
 const FIELDS = "id,displayName,rating,userRatingCount,googleMapsUri,reviews,reviewSummary,photos";
 const PHOTO_NAME = /^places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+$/;
 
-export async function placeDetails(ids, key) {
+// The admin leads page only needs who and where.
+export const BASIC_FIELDS = "id,displayName,formattedAddress,nationalPhoneNumber,websiteUri,googleMapsUri";
+
+export async function placeDetails(ids, key, fields = FIELDS) {
   const out = {};
   await Promise.all([...new Set(ids)].map(async id => {
     if (!/^[A-Za-z0-9_-]{10,300}$/.test(id)) return;
     try {
       const r = await fetch(`https://places.googleapis.com/v1/places/${id}`, {
-        headers: { "X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELDS },
+        headers: { "X-Goog-Api-Key": key, "X-Goog-FieldMask": fields },
       });
       if (r.ok) out[id] = await r.json();
     } catch {}
