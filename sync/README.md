@@ -8,6 +8,12 @@ Lets two or more phones share one travel day checklist with no sign-up. It runs 
 - Stored per trailer: the list (trip number and name, checked, hidden and custom items). No names, emails or locations. Lists untouched for a year are deleted.
 - Only sites in `ALLOWED_ORIGINS` (`wrangler.jsonc`) can use it.
 
+## Usage counts
+
+The app sends one word to `POST /hit` when it is opened, a travel day is started or finished, or a list is shared or joined. An open also says whether this is the phone's first open ever, today or this month (the phone remembers its last counted day), so phones can be tallied without any ID. One `Stats` object keeps a count per day per word; no IDs, IPs or list contents are stored.
+
+The owner reads them at `/stats#KEY`. Only the SHA-256 of the key is in this repository (`STATS_KEY_HASH`); to change the key, put the hash of a new one there. Wrong keys share the 20-an-hour cap with wrong codes. Live tests never post counts; `SYNC_TEST_STATS_KEY=... npm test` checks them against the local dev server.
+
 ## Run it locally
 
 ```

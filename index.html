@@ -625,7 +625,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
           <span class="g-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span>
           <div>
             <h3>Is my information private?</h3>
-            <p>No sign-up, no ads, no tracking. Your list stays on your phone.<span id="guidePrivacyShare" hidden> If you share it, the list and its code are also kept on our sync service so both phones can see it. No names or emails are collected, and unused lists are deleted after a year.</span></p>
+            <p>No sign-up, no ads, no tracking. Your list stays on your phone. We keep a simple tally of how often the checklist is opened and used, so we know if it's helping people. It holds counts only, with no cookies and nothing that identifies you or your phone.<span id="guidePrivacyShare" hidden> If you share it, the list and its code are also kept on our sync service so both phones can see it. No names or emails are collected, and unused lists are deleted after a year.</span></p>
           </div>
         </div>
       </div>
@@ -881,6 +881,30 @@ body.page-open .sections, body.page-open .alldone { display: none; }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
+
+  // Anonymous usage counts: one word sent to the sync service (open, start, done, share, join), with no ID.
+  // This phone remembers the last day it was counted, so the service can tally phones without telling them apart.
+  var COUNT_KEY = "traveldaychecklist.count";
+  var counted = {};
+  try { counted = JSON.parse(localStorage.getItem(COUNT_KEY) || "{}") || {}; } catch (e) {}
+  function count(e, extra) {
+    if (!SYNC_URL) return;
+    var msg = { e: e };
+    for (var k in extra) msg[k] = extra[k];
+    try {
+      fetch(SYNC_URL + "/hit", { method: "POST", body: JSON.stringify(msg), keepalive: true }).catch(function () {});
+    } catch (err) {}
+  }
+  function saveCounted() {
+    try { localStorage.setItem(COUNT_KEY, JSON.stringify(counted)); } catch (e) {}
+  }
+  (function () {
+    var today = new Date().toISOString().slice(0, 10);
+    var flags = { new: !counted.day, day: counted.day !== today, month: (counted.day || "").slice(0, 7) !== today.slice(0, 7) };
+    counted.day = today;
+    saveCounted();
+    count("open", flags);
+  })();
 
   // Every change to the list goes through here, so a shared phone can send it on.
   // keep in step with sync/src/state.js
@@ -1218,6 +1242,11 @@ body.page-open .sections, body.page-open .alldone { display: none; }
       document.getElementById("ml-" + r).classList.toggle("on", on);
     });
     document.getElementById("allDone").hidden = editing || !(total > 0 && done === total);
+    if (total > 0 && done === total && counted.done !== state.trip) {
+      counted.done = state.trip;
+      saveCounted();
+      count("done");
+    }
     renderTrip();
   }
 
@@ -1391,6 +1420,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
   document.getElementById("resetYes").addEventListener("click", function () {
     state.closed = {};
     change({ t: "trip", trip: state.trip + 1 });
+    count("start");
     resetConfirm.hidden = true;
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1669,7 +1699,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     if (busy) return;
     busy = true; say("Setting up sharing…", true);
     newRoom().then(function (r) {
-      if (r.code) { startSharing(r.code); say("Your list is shared. Now send the link to your partner.", true); }
+      if (r.code) { startSharing(r.code); count("share"); say("Your list is shared. Now send the link to your partner.", true); }
       else say(trouble(r.status));
     }, function () { say(NO_SIGNAL); }).then(function () { busy = false; });
   }
@@ -1686,6 +1716,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
         joinCode.value = "";
         document.getElementById("joinIntro").textContent = "Type the 6-letter code shown on your partner's phone.";
         startSharing(code);
+        count("join");
         say("You're in! Checkmarks now show up on both phones.", true);
       } else if (r.status === 404) say("We couldn't find that code. Check the letters with your partner and try again.");
       else say(trouble(r.status));
@@ -1765,6 +1796,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
     render();
   }
   document.getElementById("wStart").addEventListener("click", function () {
+    count("start");
     showWelcome("name");
     document.getElementById("wName").value = state.name;
     document.getElementById("wName").focus();
