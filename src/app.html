@@ -690,6 +690,19 @@ body.page-open .sections, body.page-open .alldone { display: none; }
   var SYNC_URL = "https://checklist-sync.rigkit31.workers.dev";
 
   var SECTIONS = [
+    { id: "exterior", name: "Exterior Stow", who: "outside", items: [
+      ["e1", "Main awning retracted and locked"],
+      ["e2", "Window awnings secured", 1],
+      ["e3", "Exterior items packed (chairs, rug, grill, tables, etc.)"],
+      ["e4", "Exterior shower stowed, door closed and locked"],
+      ["e5", "Roof clear of any loose objects"],
+      ["e8", "Outside stove exhaust vents closed"],
+      ["e6", "Leveling blocks picked up"],
+      ["e12", "Stabilizer jack pads picked up", 1],
+      ["h13", "Exterior storage compartments closed and locked"],
+      ["h18", "Exterior hatches closed and locked"],
+      ["e7", "Entry steps fully retracted and locked"]
+    ]},
     { id: "hookups", name: "Hookups & Utilities", who: "outside", items: [
       ["h1", "Black tank dumped"],
       ["h14", "Gray tank dumped"],
@@ -708,22 +721,6 @@ body.page-open .sections, body.page-open .alldone { display: none; }
       ["h11", "Propane cover latched"],
       ["h12", "Water heater door latched"]
     ]},
-    { id: "exterior", name: "Exterior Stow", who: "outside", items: [
-      ["e1", "Main awning retracted and locked"],
-      ["e2", "Window awnings secured", 1],
-      ["e3", "Outdoor chairs packed"],
-      ["e9", "Outdoor table packed"],
-      ["e10", "Grill packed", 1],
-      ["e11", "Outdoor rug packed"],
-      ["e4", "Exterior shower stowed, door closed and locked", 1],
-      ["e5", "Roof clear of any loose objects"],
-      ["e8", "Outside stove exhaust vents closed"],
-      ["e6", "Leveling blocks picked up"],
-      ["e12", "Stabilizer jack pads picked up"],
-      ["e7", "Entry steps fully retracted and locked"],
-      ["h13", "Exterior storage compartments closed and locked"],
-      ["h18", "Exterior hatches closed and locked"]
-    ]},
     { id: "tires", name: "Wheels & Tires", who: "outside", items: [
       ["t1", "Trailer tire pressure checked cold"],
       ["t8", "Tow vehicle tire pressure checked cold"],
@@ -735,8 +732,7 @@ body.page-open .sections, body.page-open .alldone { display: none; }
       ["t7", "Look underneath for leaks, hanging items, or obstructions"]
     ]},
     { id: "hitch", name: "Hitch & Tow Setup", who: "outside", items: [
-      ["k1", "Hitch pin in place in the receiver"],
-      ["k12", "Hitch pin clip in place"],
+      ["k1", "Trailer hitch pin or lock in place"],
       ["k2", "Coupler latched on the ball"],
       ["k13", "Coupler lock in place"],
       ["k4", "Weight distribution and/or sway control connected and tensioned", 1],
@@ -745,24 +741,16 @@ body.page-open .sections, body.page-open .alldone { display: none; }
       ["k7", "7-pin plug connected"],
       ["k8", "Tongue jack fully raised"],
       ["k14", "Tongue jack foot or pad removed and stored"],
-      ["k9", "Running lights working", 0, "A helper behind the trailer makes the light checks quick."],
-      ["k15", "Left turn signal working"],
-      ["k16", "Right turn signal working"],
-      ["k17", "Brake lights working"],
-      ["k18", "Clearance lights working"],
-      ["k10", "Brake controller tested: squeeze the manual lever while rolling slowly"],
-      ["k11", "License plate clean and visible"],
-      ["k19", "Reflectors clean and visible"]
+      ["k9", "Turn signals, brake lights, and running lights on and working"],
+      ["k10", "Brake controller tested and working"],
+      ["k11", "License plate and reflectors clean and visible"]
     ]},
     { id: "vehicle", name: "Tow Vehicle", who: "outside", items: [
       ["v1", "Towing mirrors extended and adjusted"],
       ["v2", "Tow mode turned on"],
       ["v3", "Backup or trailer camera on", 1],
       ["v4", "Route checked for low clearances"],
-      ["v7", "Route checked for propane restrictions", 0, "Some tunnels and bridges don't allow propane."],
-      ["v5", "Fuel or charge level checked"],
-      ["v6", "Passengers buckled in"],
-      ["v8", "Pets secured"]
+      ["v6", "Passengers buckled in and pets secured"]
     ]},
     { id: "kitchen", name: "Kitchen", who: "inside", items: [
       ["c3", "Sink empty"],
