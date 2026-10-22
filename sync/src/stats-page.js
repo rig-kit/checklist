@@ -65,7 +65,7 @@ export const STATS_PAGE = `<!doctype html>
       <li><b>Opens</b> counts every time the checklist is opened or reloaded.</li>
       <li><b>Started</b> counts taps on "Start a new checklist" (first visit) and "Start a new travel day". <b>Finished</b> counts a phone seeing every item checked (each phone on a shared list counts).</li>
       <li><b>Shared</b> counts new share codes made. <b>Joined</b> counts phones joining a partner's list.</li>
-      <li>Counting began on October 21, 2026. Nothing identifies a person or phone: no IDs, cookies, IP addresses or list contents are kept.</li>
+      <li>Counting began on October 22, 2026 (earlier test use was cleared). Nothing identifies a person or phone: no IDs, cookies, IP addresses or list contents are kept.</li>
     </ul>
   </div>
 </main>
