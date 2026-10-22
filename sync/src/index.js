@@ -10,6 +10,7 @@ const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O, 1/I/L
 const CODE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/;
 const YEAR = 365 * 24 * 3600 * 1000;
 const HOUR = 3600 * 1000;
+const COUNTS_FROM = "2026-10-22"; // usage counts were cleared when this changed (EL's test use dropped)
 const RATE = { create: 10, miss: 20, hit: 60 }; // per IP per hour: new trailers, wrong codes or keys, usage counts
 
 function newCode() {
@@ -208,6 +209,13 @@ export class Stats extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS counts (day TEXT, name TEXT, n INTEGER, PRIMARY KEY (day, name))");
+    // Start the counts over once per COUNTS_FROM, so test use before it is dropped. Change it to start over again.
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)");
+    const from = ctx.storage.sql.exec("SELECT v FROM meta WHERE k = 'from'").toArray()[0];
+    if (!from || from.v !== COUNTS_FROM) {
+      ctx.storage.sql.exec("DELETE FROM counts");
+      ctx.storage.sql.exec("INSERT OR REPLACE INTO meta VALUES ('from', ?)", COUNTS_FROM);
+    }
   }
 
   add(names) {
