@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rigkit-planner",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [
+      { "name": "ORDERS", "class_name": "Order" },
+      { "name": "GATE", "class_name": "Gate" },
+      { "name": "INTERVIEWS", "class_name": "Interview" },
+      { "name": "LEADS", "class_name": "Leads" }
+    ]
+  },
+  // SQLite-backed objects are the kind the free plan allows.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Order", "Gate"] },
+    { "tag": "v2", "new_sqlite_classes": ["Interview"] },
+    { "tag": "v3", "new_sqlite_classes": ["Leads"] }
+  ],
+  "vars": {
+    "PUBLIC_URL": "https://rigkit-planner.rigkit31.workers.dev",
+    // Hard cap on what one plan may spend on Claude and run time, in cents.
+    "SESSION_BUDGET_CENTS": "600",
+    "ORDERS_PER_DAY": "10",
+    "CHAT_TURNS_PER_DAY": "600",
+    // SHA-256 of the owner's key for /admin (website leads). To change the key, put the hash of a new one here.
+    "ADMIN_KEY_HASH": "81c9ec9d50d1592d4257c7ce4e0276b3a1f5d2c73fe9fb89467accbaedf96a29"
+  }
+  // Secrets (set by the deploy workflow): ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY, ACCESS_CODE, optional RESEND_API_KEY.
+}
